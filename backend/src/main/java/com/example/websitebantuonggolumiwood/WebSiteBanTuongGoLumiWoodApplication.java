@@ -1,0 +1,14 @@
+package com.example.websitebantuonggolumiwood;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class WebSiteBanTuongGoLumiWoodApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(WebSiteBanTuongGoLumiWoodApplication.class, args);
+        System.out.println("running ...");
+    }
+
+}
