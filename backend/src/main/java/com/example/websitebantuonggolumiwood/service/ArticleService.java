@@ -1,4 +1,4 @@
-package com.example.Article.service;
+package com.example.websitebantuonggolumiwood.service;
 
 import com.example.Article.dto.ArticleDetailDto;
 import com.example.Article.dto.ArticleSummaryDto;

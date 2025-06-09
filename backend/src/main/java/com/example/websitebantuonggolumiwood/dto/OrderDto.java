@@ -1,4 +1,4 @@
-package com.example.OrderHistory.dto;
+package com.example.websitebantuonggolumiwood.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

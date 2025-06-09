@@ -1,4 +1,4 @@
-package com.example.OrderHistory.entity;
+package com.example.websitebantuonggolumiwood.entity;
 
 
 import jakarta.persistence.*;
