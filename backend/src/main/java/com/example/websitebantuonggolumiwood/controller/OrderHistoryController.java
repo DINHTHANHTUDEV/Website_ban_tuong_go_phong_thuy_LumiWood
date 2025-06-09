@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/orders")
 //@CrossOrigin(origins = "http://localhost:5173")  // Kết nối FE
-public class OrderController {
+public class OrderHistoryController {
 
     @Autowired
     private OrderRepository orderRepository;
