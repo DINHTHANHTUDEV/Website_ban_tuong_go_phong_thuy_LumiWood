@@ -1,6 +1,6 @@
 <template>
   <div class="admin-shipping-method-form-view">
-    
+
     <div class="mb-3">
       <router-link :to="{ name: 'adminShippingMethodList' }" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại Danh sách PTVC
@@ -9,41 +9,41 @@
 
     <h1 class="mb-4">{{ isEditMode ? 'Chỉnh sửa Phương thức Vận chuyển' : 'Thêm Phương thức Vận chuyển mới' }}</h1>
 
-    
+
     <div v-if="loadingInitial" class="text-center my-5"> ... </div>
 
-    
+
     <div v-else-if="initialError" class="alert alert-danger"> ... </div>
 
-    
+
     <form v-else @submit.prevent="handleSubmit" novalidate>
       <div class="card shadow-sm">
         <div class="card-body p-4">
-          
+
           <div v-if="submitError" class="alert alert-danger">{{ submitError }}</div>
 
           <div class="row g-3">
-            
+
             <div class="col-md-6">
               <label for="methodName" class="form-label">Tên Phương thức <span class="text-danger">*</span></label>
               <input type="text" class="form-control" :class="{'is-invalid': validationErrors.name}" id="methodName" v-model.trim="formData.name" required :disabled="submitting">
               <div class="invalid-feedback">{{ validationErrors.name }}</div>
             </div>
 
-            
+
             <div class="col-md-6">
               <label for="methodBaseCost" class="form-label">Phí cơ bản (VND) <span class="text-danger">*</span></label>
               <input type="number" step="1000" min="0" class="form-control" :class="{'is-invalid': validationErrors.baseCost}" id="methodBaseCost" v-model.number="formData.baseCost" required :disabled="submitting">
               <div class="invalid-feedback">{{ validationErrors.baseCost }}</div>
             </div>
 
-            
+
             <div class="col-12">
               <label for="methodDescription" class="form-label">Mô tả</label>
               <textarea class="form-control" id="methodDescription" rows="3" v-model="formData.description" :disabled="submitting"></textarea>
             </div>
 
-            
+
             <div class="col-md-6">
               <label for="methodEstMin" class="form-label">Số ngày dự kiến (Tối thiểu)</label>
               <input type="number" min="0" class="form-control" :class="{'is-invalid': validationErrors.estimatedDaysMin}" id="methodEstMin" v-model.number="formData.estimatedDaysMin" :disabled="submitting">
@@ -55,7 +55,7 @@
               <div class="invalid-feedback">{{ validationErrors.estimatedDaysMax || validationErrors.maxDaysValid }}</div>
             </div>
 
-            
+
             <div class="col-12">
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" id="methodIsActive" v-model="formData.isActive" :disabled="submitting">
@@ -66,7 +66,7 @@
             </div>
           </div>
 
-          
+
           <hr class="my-4">
           <div class="d-flex justify-content-end">
             <router-link :to="{ name: 'adminShippingMethodList' }" class="btn btn-outline-secondary me-2" :disabled="submitting">Hủy</router-link>

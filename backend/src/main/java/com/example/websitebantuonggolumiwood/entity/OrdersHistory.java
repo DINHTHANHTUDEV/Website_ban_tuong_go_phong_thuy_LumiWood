@@ -1,5 +1,8 @@
 package com.example.websitebantuonggolumiwood.entity;
 
+import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
+import com.example.websitebantuonggolumiwood.entity.ShippingMethodOrder;
+import com.example.websitebantuonggolumiwood.entity.UsersOrderHistory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

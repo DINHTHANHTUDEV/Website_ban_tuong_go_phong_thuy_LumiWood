@@ -1,6 +1,6 @@
 package com.example.websitebantuonggolumiwood.repository;
 
-import com.example.Article.entity.Article;
+import com.example.websitebantuonggolumiwood.entity.Article;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

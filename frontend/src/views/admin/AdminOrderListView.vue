@@ -2,20 +2,18 @@
   <div class="admin-order-list-view container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>Quản lý Đơn hàng</h1>
-      
     </div>
 
-    
     <div class="card shadow-sm mb-4">
       <div class="card-body">
         <form @submit.prevent="applyTableFilters">
           <div class="row g-3 align-items-end">
-            
+
             <div class="col-md-4 col-lg-3">
               <label for="filterKeyword" class="form-label">Tìm kiếm</label>
-              <input type="text" class="form-control form-control-sm" id="filterKeyword" v-model="filters.keyword" placeholder="Mã ĐH, tên, SĐT, email...">
+              <input type="text" class="form-control form-control-sm" id="filterKeyword" v-model="filters.keyword" placeholder="Mã ĐH, tên, SĐT,....">
             </div>
-            
+
             <div class="col-md-3 col-lg-2">
               <label for="filterStatus" class="form-label">Trạng thái</label>
               <select class="form-select form-select-sm" id="filterStatus" v-model="filters.status">
@@ -25,7 +23,7 @@
                 </option>
               </select>
             </div>
-            
+
             <div class="col-md-5 col-lg-4">
               <label class="form-label">Ngày đặt hàng</label>
               <div class="input-group input-group-sm">
@@ -34,7 +32,7 @@
                 <input type="date" class="form-control" title="Đến ngày" v-model="filters.endDate">
               </div>
             </div>
-            
+
             <div class="col-md-12 col-lg-3 d-flex gap-2 mt-3 mt-lg-0">
               <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
                 <i class="bi bi-search"></i> Tìm kiếm / Lọc
@@ -48,19 +46,16 @@
       </div>
     </div>
 
-    
     <div v-if="loading" class="text-center my-5 py-5">
       <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
         <span class="visually-hidden">Đang tải đơn hàng...</span>
       </div>
     </div>
 
-    
     <div v-else-if="error" class="alert alert-danger">
       Lỗi tải đơn hàng: {{ error }}
     </div>
 
-    
     <div v-else-if="orders.length > 0" class="table-responsive card shadow-sm">
       <table class="table table-hover table-striped mb-0 align-middle">
         <thead class="table-light">
@@ -75,20 +70,20 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="order in orders" :key="order.orderId">
-          <td class="fw-medium">#{{ order.orderId }}</td>
+        <tr v-for="order in orders" :key="order.id">
+          <td class="fw-medium">#{{ order.id }}</td>
           <td>{{ formatDateTime(order.orderDate) }}</td>
-          <td>{{ order.customerInfo }}</td>
+          <td>{{ order.customerName }}</td>
           <td class="text-end">{{ formatCurrency(order.totalAmount) }}</td>
           <td class="text-center">
               <span class="badge rounded-pill" :class="getStatusClass(order.status)">
                 {{ formatStatus(order.status) }}
               </span>
           </td>
-          <td>{{ order.paymentMethod }}</td>
+          <td>{{ order.paymentMethod || 'N/A' }}</td>
           <td class="text-center">
             <router-link
-              :to="{ name: 'adminOrderDetail', params: { orderId: order.orderId } }"
+              :to="{ name: 'adminOrderDetail', params: { orderId: order.id } }"
               class="btn btn-sm btn-outline-primary"
               title="Xem chi tiết"
             >
@@ -98,7 +93,7 @@
         </tr>
         </tbody>
       </table>
-      
+
       <div class="card-footer bg-light border-top-0" v-if="totalPages > 1">
         <BasePagination
           :current-page="currentPage"
@@ -109,7 +104,6 @@
       </div>
     </div>
 
-    
     <div v-else class="alert alert-info text-center">
       Không có đơn hàng nào khớp với tiêu chí.
     </div>
@@ -117,8 +111,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute, RouterLink } from 'vue-router';
+import { ref, reactive, computed, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { getAllOrders } from '@/http/modules/admin/adminOrderService.js';
 import BasePagination from '@/components/common/BasePagination.vue';
 
@@ -130,76 +124,74 @@ const route = useRoute();
 const orders = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const currentPage = ref(0);
+const currentPage = ref(1); // UI 1-based
 const totalPages = ref(0);
 const itemsPerPage = ref(15);
 
-
 const filters = reactive({
   keyword: route.query.keyword || '',
-  status: route.query.status || null,
-  startDate: route.query.startDate || null,
-  endDate: route.query.endDate || null,
+  status: route.query.status || '',
+  startDate: route.query.startDate || '',
+  endDate: route.query.endDate || '',
 });
-
 
 const statusOptions = computed(() => {
   return allStatuses.map(s => ({ value: s, text: formatStatus(s) }));
 });
 
-
 const applyTableFilters = () => {
-  const query = { ...route.query, page: 0 };
+  const query = { ...route.query, page: 1 };
   if (filters.keyword) query.keyword = filters.keyword; else delete query.keyword;
   if (filters.status) query.status = filters.status; else delete query.status;
   if (filters.startDate) query.startDate = filters.startDate; else delete query.startDate;
   if (filters.endDate) query.endDate = filters.endDate; else delete query.endDate;
+
   if (filters.startDate && filters.endDate && filters.startDate > filters.endDate) {
     alert("Ngày bắt đầu không được sau ngày kết thúc.");
     return;
   }
+
   router.push({ query });
 };
 
-
 const resetFilters = () => {
   filters.keyword = '';
-  filters.status = null;
-  filters.startDate = null;
-  filters.endDate = null;
+  filters.status = '';
+  filters.startDate = '';
+  filters.endDate = '';
   const query = { ...route.query };
   delete query.keyword;
   delete query.status;
   delete query.startDate;
   delete query.endDate;
-  query.page = 0;
+  query.page = 1;
   router.push({ query });
 };
 
-
-const fetchOrders = async (page = 0) => {
+const fetchOrders = async (page = 1) => {
   loading.value = true;
   error.value = null;
+
   try {
     const params = {
-      page,
+      page: page - 1, // 0-based backend
       size: itemsPerPage.value,
       sort: route.query.sort || 'orderDate,desc',
-
-      ...(filters.keyword && { keyword: filters.keyword }),
-      ...(filters.status && { status: filters.status }),
-      ...(filters.startDate && { startDate: filters.startDate }),
-      ...(filters.endDate && { endDate: filters.endDate }),
     };
-    console.log("Fetching orders with params:", params);
+
+    if (filters.keyword?.trim()) params.keyword = filters.keyword.trim();
+    if (filters.status) params.status = filters.status;
+    if (filters.startDate) params.startDate = filters.startDate;
+    if (filters.endDate) params.endDate = filters.endDate;
+
     const response = await getAllOrders(params);
-    orders.value = response.data.content || [];
-    currentPage.value = response.data.number;
-    totalPages.value = response.data.totalPages;
+    orders.value = response.content || [];
+    currentPage.value = response.number + 1;
+    totalPages.value = response.totalPages;
   } catch (err) {
-    console.error("Error fetching admin orders:", err);
     error.value = "Không thể tải danh sách đơn hàng.";
-    orders.value = []; totalPages.value = 0;
+    orders.value = [];
+    totalPages.value = 0;
   } finally {
     loading.value = false;
   }
@@ -209,24 +201,19 @@ const handlePageChange = (newPage) => {
   router.push({ query: { ...route.query, page: newPage } });
 };
 
-
 watch(
   () => route.query,
   (newQuery) => {
-    console.log('Route query changed:', newQuery);
-
     filters.keyword = newQuery.keyword || '';
-    filters.status = newQuery.status || null;
-    filters.startDate = newQuery.startDate || null;
-    filters.endDate = newQuery.endDate || null;
+    filters.status = newQuery.status || '';
+    filters.startDate = newQuery.startDate || '';
+    filters.endDate = newQuery.endDate || '';
 
-
-    const pageNum = parseInt(newQuery.page || '0', 10);
+    const pageNum = parseInt(newQuery.page || '1', 10);
     fetchOrders(pageNum);
   },
   { immediate: true, deep: true }
 );
-
 </script>
 
 <style scoped>
@@ -239,4 +226,3 @@ watch(
   font-size: 0.875rem;
 }
 </style>
-

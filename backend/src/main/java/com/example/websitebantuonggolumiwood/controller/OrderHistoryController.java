@@ -1,22 +1,30 @@
 package com.example.websitebantuonggolumiwood.controller;
 
+<<<<<<< HEAD:backend/src/main/java/com/example/websitebantuonggolumiwood/controller/OrderController.java
 import com.example.OrderHistory.dto.OrderDto;
 import com.example.OrderHistory.dto.OrderItemDto;
 import com.example.OrderHistory.dto.UserOrderDetailDTO;
 import com.example.OrderHistory.entity.Order;
 import com.example.OrderHistory.repo.OrderRepository;
 import com.example.websitebantuonggolumiwood.dto.OrderDto;
+=======
+import com.example.websitebantuonggolumiwood.dto.OrderDto;
+import com.example.websitebantuonggolumiwood.dto.OrderItemDto;
+import com.example.websitebantuonggolumiwood.dto.UserOrderDetailDTO;
+>>>>>>> 69168384dbe46ca492f73bad69d4e766cbed9d75:backend/src/main/java/com/example/websitebantuonggolumiwood/controller/OrderHistoryController.java
 import com.example.websitebantuonggolumiwood.entity.Order;
 import com.example.websitebantuonggolumiwood.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,7 +32,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/orders")
 //@CrossOrigin(origins = "http://localhost:5173")  // Kết nối FE
-public class OrderController {
+public class OrderHistoryController {
 
     @Autowired
     private OrderRepository orderRepository;
@@ -71,7 +79,7 @@ public class OrderController {
 
     // 2. Lấy chi tiết đơn hàng theo ID
     @GetMapping("/getOrdersDetail/{id}")
-    public ResponseEntity<UserOrderDetailDTO> getOrderDetail(@PathVariable Integer id) {
+    public ResponseEntity<UserOrderDetailDTO> getOrderDetail(@PathVariable Long id) {
         Optional<Order> optionalOrder = orderRepository.findById(id);
 
         if (optionalOrder.isEmpty()) {

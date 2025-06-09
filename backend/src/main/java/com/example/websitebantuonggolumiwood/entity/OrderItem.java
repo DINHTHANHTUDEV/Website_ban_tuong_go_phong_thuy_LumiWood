@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.example.websitebantuonggolumiwood.entity.ProductOrderHistory;
+import com.example.websitebantuonggolumiwood.entity.OrdersHistory;
 
 import java.math.BigDecimal;
 @NoArgsConstructor
@@ -21,7 +23,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
-    private ProductOrderHistory product;
+    private  ProductOrderHistory product;
 
     @Column(name = "product_id")
     private Integer productId;
