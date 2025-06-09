@@ -7,13 +7,13 @@
       </router-link>
     </div>
 
-    
+
     <div v-if="loading" class="text-center my-5"> ... </div>
 
-    
+
     <div v-else-if="error" class="alert alert-danger"> ... </div>
 
-    
+
     <div v-else-if="methods.length > 0" class="table-responsive card shadow-sm">
       <table class="table table-hover table-striped mb-0 align-middle">
         <thead class="table-light">
@@ -56,7 +56,7 @@
         </tr>
         </tbody>
       </table>
-      
+
       <div class="card-footer bg-light border-top-0" v-if="totalPages > 1">
         <BasePagination
           :current-page="currentPage"
@@ -67,7 +67,7 @@
       </div>
     </div>
 
-    
+
     <div v-else class="alert alert-info text-center"> ... </div>
   </div>
 </template>
