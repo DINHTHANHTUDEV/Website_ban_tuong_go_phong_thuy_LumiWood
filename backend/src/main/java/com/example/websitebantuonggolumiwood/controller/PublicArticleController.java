@@ -1,8 +1,8 @@
-package com.example.Article.controller;
+package com.example.websitebantuonggolumiwood.controller;
 
-import com.example.Article.dto.ArticleDetailDto;
-import com.example.Article.dto.ArticleSummaryDto;
-import com.example.Article.service.ArticleService;
+import com.example.websitebantuonggolumiwood.dto.ArticleDetailDto;
+import com.example.websitebantuonggolumiwood.dto.ArticleSummaryDto;
+import com.example.websitebantuonggolumiwood.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
