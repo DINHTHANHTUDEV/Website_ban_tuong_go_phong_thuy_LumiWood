@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Integer> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
     // Lấy 5 đơn hàng gần nhất theo user, order theo ngày giảm dần
     List<Order> findTop5ByUserOrderByOrderDateDesc(User user);
 }

@@ -1,4 +1,4 @@
-package com.example.Article.entity;
+package com.example.websitebantuonggolumiwood.entity;
 
 
 import jakarta.persistence.*;
