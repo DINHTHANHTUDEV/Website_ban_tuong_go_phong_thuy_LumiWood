@@ -338,19 +338,22 @@ const fetchSummaryStats = async (type) => {
     else if (type === "currentMonth") response = await getCurrentMonthStats();
     else return;
 
-    if (response && response.data) {
-      stats[type] = response.data;
+    console.log(`${type} stats response:`, response); // Log để debug
+    if (response) {
+      stats[type] = response;
     } else {
       throw new Error("Dữ liệu không hợp lệ");
     }
   } catch (err) {
-    console.error(`Error fetching ${type} stats:`, err);
+    console.error(`Error fetching ${type} stats:`, err.response?.data || err.message);
     errorStats[type] = err;
     stats[type] = null;
   } finally {
     loadingStats[type] = false;
   }
 };
+
+
 
 
 const fetchChartData = async (startDate, endDate) => {
@@ -408,16 +411,16 @@ const fetchCustomStats = async () => {
   statsCustom.value = null;
 
   try {
-    const response = await getBasicStats(customDate.value.start, customDate.value.end);
-    if (response && response.data) {
-      statsCustom.value = response.data;
-
+    const response = await getRevenueOverTime(customDate.value.start, customDate.value.end);
+    console.log('Custom stats response:', response); // Log để debug
+    if (response) {
+      statsCustom.value = response;
       await fetchChartData(customDate.value.start, customDate.value.end);
     } else {
       throw new Error("Không nhận được dữ liệu hợp lệ");
     }
   } catch (err) {
-    console.error("Error fetching custom stats:", err);
+    console.error('Error fetching custom stats:', err.response?.data || err.message);
     errorCustomStats.value = err;
     statsCustom.value = null;
   } finally {
