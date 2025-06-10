@@ -36,6 +36,7 @@ import { useRoute, useRouter } from "vue-router";
 import { getArticles } from "@/http/modules/public/articleService.js";
 import ArticleCard from "@/components/article/ArticleCard.vue";
 import BasePagination from "@/components/common/BasePagination.vue";
+import axios from 'axios';
 
 const route = useRoute();
 const router = useRouter();
@@ -47,20 +48,75 @@ const currentPage = ref(0);
 const totalPages = ref(0);
 const itemsPerPage = ref(9);
 
+// const fetchArticles = async (page = 0) => {
+//   loading.value = true;
+//   error.value = null;
+//   articles.value = [];
+//   try {
+//     const params = {
+//       page: page,
+//       size: itemsPerPage.value,
+//       sort: "publishedAt,desc",
+//     };
+
+    
+//     const response = await getArticles(params);
+//     articles.value = response.data.content || [];
+//     currentPage.value = response.data.number;
+//     totalPages.value = response.data.totalPages;
+//   } catch (err) {
+//     console.error("Error fetching articles:", err);
+//     error.value = "Không thể tải danh sách bài viết.";
+//   } finally {
+//     loading.value = false;
+//   }
+// };
+// const fetchArticles = async (page = 0) => {
+//   loading.value = true;
+//   error.value = null;
+//   articles.value = [];
+
+//   try {
+//     const params = {
+//       page: page,
+//       size: itemsPerPage.value,
+//       sort: "publishedAt,desc",
+//     };
+
+//     const response = await getArticles(params);
+//     console.log("API raw response:", response);
+//     console.log("Articles content:", response?.data?.content);
+
+//     articles.value = response.data.content || [];
+//     currentPage.value = response.data.number;
+//     totalPages.value = response.data.totalPages;
+//   } catch (err) {
+//     console.error("Error fetching articles:", err);
+//     error.value = "Không thể tải danh sách bài viết.";
+//   } finally {
+//     loading.value = false;
+//   }
+// };
 const fetchArticles = async (page = 0) => {
   loading.value = true;
   error.value = null;
   articles.value = [];
+
   try {
-    const params = {
-      page: page,
-      size: itemsPerPage.value,
-      sort: "publishedAt,desc",
-    };
-    const response = await getArticles(params);
+    const response = await axios.get('http://localhost:8080/api/public/articles/getListArticles', {
+      params: {
+        page: page,
+        size: itemsPerPage.value,
+        sort: "publishedAt"
+      }
+    });
+
+    console.log("API raw response:", response.data);  // kiểm tra cho chắc
+
     articles.value = response.data.content || [];
     currentPage.value = response.data.number;
     totalPages.value = response.data.totalPages;
+
   } catch (err) {
     console.error("Error fetching articles:", err);
     error.value = "Không thể tải danh sách bài viết.";
@@ -68,6 +124,9 @@ const fetchArticles = async (page = 0) => {
     loading.value = false;
   }
 };
+
+
+
 
 const handlePageChange = (newPage) => {
 
