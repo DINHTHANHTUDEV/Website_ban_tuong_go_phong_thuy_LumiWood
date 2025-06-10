@@ -29,4 +29,5 @@ public class ProductReviewsController {
         Page<ProductReviews> reviews = productReviewsService.getApprovedReviewsByProductId(productId, pageable);
         return ResponseEntity.ok(reviews);
     }
+
 }
