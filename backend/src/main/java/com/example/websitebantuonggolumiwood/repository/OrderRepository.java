@@ -10,4 +10,7 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     // Lấy 5 đơn hàng gần nhất theo user, order theo ngày giảm dần
     List<Order> findTop5ByUserOrderByOrderDateDesc(User user);
+
+    //hien thi danh sach don hang theo user co phan trang
+
 }

@@ -33,7 +33,7 @@ public class OrderService {
         return orders.stream()
                 .map(order -> new OrderRecentDTO(
                         order.getId(),
-                        "#MU-" + String.format("%04d", order.getId()), // code ví dụ
+//                        "#MU-" + String.format("%04d", order.getId()), // code ví dụ
                         order.getOrderDate(),
                         order.getStatus(),
                         order.getTotalAmount()
