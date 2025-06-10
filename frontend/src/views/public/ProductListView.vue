@@ -330,17 +330,18 @@ const fetchData = async () => {
     size: itemsPerPage.value,
     sort: currentSort.value,
     ...(route.query.keyword && { keyword: route.query.keyword }),
-
-    ...(categoryIdParam && { categoryId: categoryIdParam }),
+//Đã sửa ở đây
+    ...(categoryIdParam && { categories: categoryIdParam }),
 
     ...(!categoryIdParam &&
       currentFilters.value.categories.length > 0 && {
-        categoryIds: currentFilters.value.categories.join(","),
+        //có fix
+        categories: currentFilters.value.categories.join(","),
       }),
-
+//có fix
     ...(currentFilters.value.minPrice !== null && { minPrice: currentFilters.value.minPrice }),
     ...(currentFilters.value.maxPrice !== null && { maxPrice: currentFilters.value.maxPrice }),
-    ...(currentFilters.value.material && { material: currentFilters.value.material }),
+    ...(currentFilters.value.material && { materials: currentFilters.value.material }),
     ...(currentFilters.value.size && { size: currentFilters.value.size }),
 
   };
