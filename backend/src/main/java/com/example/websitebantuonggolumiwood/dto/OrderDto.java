@@ -15,6 +15,7 @@ import com.example.websitebantuonggolumiwood.dto.OrderItemDto;
 @Setter
 public class OrderDto {
     private Integer id;
+    private Long userId;
     private String customerName;
     private String customerPhone;
     private String customerAddress;

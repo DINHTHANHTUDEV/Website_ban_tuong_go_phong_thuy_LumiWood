@@ -2,6 +2,8 @@ package com.example.websitebantuonggolumiwood.repository;
 
 import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Lấy 5 đơn hàng gần nhất theo user, order theo ngày giảm dần
     List<Order> findTop5ByUserOrderByOrderDateDesc(User user);
 
-    //hien thi danh sach don hang theo user co phan trang
+    // Lấy danh sách đơn hàng theo userId (quan hệ User) với phân trang
+    Page<Order> findByUser_UserId(Long userId, Pageable pageable);
+
 
 }

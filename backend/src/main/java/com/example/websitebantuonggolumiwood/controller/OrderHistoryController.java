@@ -8,10 +8,15 @@ import com.example.websitebantuonggolumiwood.dto.OrderItemDto;
 import com.example.websitebantuonggolumiwood.dto.UserOrderDetailDTO;
 import com.example.websitebantuonggolumiwood.entity.Order;
 import com.example.websitebantuonggolumiwood.repository.OrderRepository;
+import com.example.websitebantuonggolumiwood.security.model.UserPrincipal;
+import com.example.websitebantuonggolumiwood.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,44 +36,61 @@ public class OrderHistoryController {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private OrderService orderService;
+
+    // 1. Lấy danh sách đơn hàng có phân trang
     // 1. Lấy danh sách đơn hàng có phân trang
     @GetMapping("/getOrdersHistory")
     public Page<OrderDto> getAllOrders(
+            Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        Page<Order> ordersPage = orderRepository.findAll(PageRequest.of(page, size));
+        // Lấy userId từ authentication
+        Long userId = ((UserPrincipal) authentication.getPrincipal()).getUserId();
 
-        return ordersPage.map(order -> {
-            OrderDto dto = new OrderDto();
-            dto.setId(order.getId());
-            dto.setCustomerName(order.getCustomerName());
-            dto.setCustomerPhone(order.getCustomerPhone());
-            dto.setCustomerAddress(order.getCustomerAddress());
-            dto.setTotalAmount(order.getTotalAmount());
-            dto.setStatus(order.getStatus());
-            dto.setOrderDate(order.getOrderDate());
-            dto.setPaymentMethod(order.getPaymentMethod());
-
-            List<OrderItemDto> itemDtos = order.getOrderItems().stream().map(item -> {
-                OrderItemDto i = new OrderItemDto();
-                i.setProductId(item.getProductId());
-                i.setQuantity(item.getQuantity());
-                i.setPriceAtPurchase(item.getPriceAtPurchase());
-
-                // Gán tên và hình sản phẩm
-                if (item.getProduct() != null) {
-                    i.setProductName(item.getProduct().getName());
-                    i.setProductImage(item.getProduct().getImageUrl());
-                }
-
-                return i;
-            }).collect(Collectors.toList());
-
-            dto.setOrderItems(itemDtos);
-            return dto;
-        });
+        // Gọi service lấy danh sách đơn hàng theo userId với phân trang
+        return orderService.getOrdersHistoryByUserId(userId, page, size);
     }
+//    // 1. Lấy danh sách đơn hàng có phân trang
+//    @GetMapping("/getOrdersHistory")
+//    public Page<OrderDto> getAllOrders(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "5") int size
+//    ) {
+//        Page<Order> ordersPage = orderRepository.findAll(PageRequest.of(page, size));
+//
+//        return ordersPage.map(order -> {
+//            OrderDto dto = new OrderDto();
+//            dto.setId(order.getId());
+//            dto.setCustomerName(order.getCustomerName());
+//            dto.setCustomerPhone(order.getCustomerPhone());
+//            dto.setCustomerAddress(order.getCustomerAddress());
+//            dto.setTotalAmount(order.getTotalAmount());
+//            dto.setStatus(order.getStatus());
+//            dto.setOrderDate(order.getOrderDate());
+//            dto.setPaymentMethod(order.getPaymentMethod());
+//
+//            List<OrderItemDto> itemDtos = order.getOrderItems().stream().map(item -> {
+//                OrderItemDto i = new OrderItemDto();
+//                i.setProductId(item.getProductId());
+//                i.setQuantity(item.getQuantity());
+//                i.setPriceAtPurchase(item.getPriceAtPurchase());
+//
+//                // Gán tên và hình sản phẩm
+//                if (item.getProduct() != null) {
+//                    i.setProductName(item.getProduct().getName());
+//                    i.setProductImage(item.getProduct().getImageUrl());
+//                }
+//
+//                return i;
+//            }).collect(Collectors.toList());
+//
+//            dto.setOrderItems(itemDtos);
+//            return dto;
+//        });
+//    }
 
 
     // 2. Lấy chi tiết đơn hàng theo ID
