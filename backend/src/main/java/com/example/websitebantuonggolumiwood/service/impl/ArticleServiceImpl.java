@@ -9,7 +9,7 @@ import com.example.websitebantuonggolumiwood.exception.BadRequestException;
 import com.example.websitebantuonggolumiwood.exception.ResourceNotFoundException;
 import com.example.websitebantuonggolumiwood.repository.ArticleAdminRepository;
 import com.example.websitebantuonggolumiwood.repository.UserRepository;
-import com.example.websitebantuonggolumiwood.repository.specification.ArticleSpecifications;
+import com.example.websitebantuonggolumiwood.specification.ArticleSpecifications;
 import com.example.websitebantuonggolumiwood.service.ArticleAdminService;
 import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;

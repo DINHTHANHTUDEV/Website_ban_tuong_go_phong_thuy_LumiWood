@@ -1,4 +1,4 @@
-package com.example.websitebantuonggolumiwood.repository.specification;
+package com.example.websitebantuonggolumiwood.specification;
 
 import com.example.websitebantuonggolumiwood.entity.Article;
 import jakarta.persistence.criteria.Predicate;
