@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class OrderRecentDTO {
-    private Long id;
-    private String code;         // Ví dụ: #MU-7001
+    private Integer id;
+//    private String code;         // Ví dụ: #MU-7001
     private LocalDateTime orderDate;
     private String status;
     private BigDecimal totalAmount;

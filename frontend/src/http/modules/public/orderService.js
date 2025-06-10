@@ -213,8 +213,15 @@ import axios from "axios";
 const API_URL = "http://localhost:8080/api/orders/getOrdersHistory";
 
 export const getUserOrders = (params = {}) => {
-  return axios.get(API_URL, { params });
+  const token = localStorage.getItem("token");
+  return axios.get(API_URL, {
+    params,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
+
 
 ///
 export const getOrderSummaryById = (orderId) => {
@@ -227,15 +234,7 @@ export const getOrderSummaryById = (orderId) => {
   });
 };
 
-// export const getUserOrderDetail = (orderId) => {
-//   if (!orderId) return Promise.reject(new Error("Order ID is required"));
-//   return simulateDelay(() => {
-//     if (typeof orderId === 'string' && Math.random() < 0.05 && !orderId.startsWith("MU-70")) {
-//       throw new Error(`Mock Order Detail for ID ${orderId} not found.`);
-//     }
-//     return generateMockUserOrderDetailDTO(orderId);
-//   });
-// };
+
 
 const API_Url = "http://localhost:8080/api/orders/getOrdersDetail";
 

@@ -515,9 +515,10 @@ import { getProductBySlug } from "@/http/modules/public/productService.js";
 import defaultImage from "@/assets/images/placeholder.png";
 import { useAuthStore } from "@/store/auth.js";
 import { useCartStore } from "@/store/cart.js";
-import { getProductReviews, createProductReview } from "@/http/modules/public/reviewService.js";
+import { getProductReviews } from "@/http/modules/public/reviewService.js";//, createProductReview
 import BasePagination from "@/components/common/BasePagination.vue";
 
+console.log("check getProductBySlug: ", getProductBySlug);
 
 const route = useRoute();
 const router = useRouter();
