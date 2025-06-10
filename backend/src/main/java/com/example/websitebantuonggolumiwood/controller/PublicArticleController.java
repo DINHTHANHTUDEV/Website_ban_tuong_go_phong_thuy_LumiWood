@@ -1,11 +1,5 @@
 package com.example.websitebantuonggolumiwood.controller;
 
-<<<<<<< HEAD
-import com.example.Article.dto.ArticleDetailDto;
-import com.example.Article.dto.ArticleSummaryDto;
-import com.example.Article.service.ArticleService;
-=======
->>>>>>> 69168384dbe46ca492f73bad69d4e766cbed9d75
 import com.example.websitebantuonggolumiwood.dto.ArticleDetailDto;
 import com.example.websitebantuonggolumiwood.dto.ArticleSummaryDto;
 import com.example.websitebantuonggolumiwood.service.ArticleService;
