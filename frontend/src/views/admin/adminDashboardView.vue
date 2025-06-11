@@ -1,22 +1,18 @@
 <template>
   <div class="admin-dashboard container mt-4">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>Thống kê doanh thu</h1>
     </div>
 
-    
+
     <div class="row mb-4">
-      
+      <!-- Thống kê tổng quan -->
       <div class="col-md-6 col-lg-4 mb-3">
         <div class="card text-white bg-primary h-100">
           <div class="card-header">Hôm Nay ({{ todayDate }})</div>
           <div class="card-body">
-            <div
-              v-if="loadingStats.today"
-              class="spinner-border spinner-border-sm text-white"
-              role="status"
-            >
+            <div v-if="loadingStats.today" class="spinner-border spinner-border-sm text-white" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
             <div v-else>
@@ -38,11 +34,7 @@
         <div class="card text-white bg-success h-100">
           <div class="card-header">7 Ngày Gần Nhất</div>
           <div class="card-body">
-            <div
-              v-if="loadingStats.last7days"
-              class="spinner-border spinner-border-sm text-white"
-              role="status"
-            >
+            <div v-if="loadingStats.last7days" class="spinner-border spinner-border-sm text-white" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
             <div v-else>
@@ -64,11 +56,7 @@
         <div class="card text-dark bg-warning h-100">
           <div class="card-header">Tháng {{ currentMonth }}</div>
           <div class="card-body">
-            <div
-              v-if="loadingStats.currentMonth"
-              class="spinner-border spinner-border-sm text-dark"
-              role="status"
-            >
+            <div v-if="loadingStats.currentMonth" class="spinner-border spinner-border-sm text-dark" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
             <div v-else>
@@ -88,7 +76,7 @@
       </div>
     </div>
 
-    
+    <!-- Biểu đồ doanh thu theo ngày -->
     <div class="row mb-4">
       <div class="col-12">
         <div class="card">
@@ -101,14 +89,14 @@
             <div v-else-if="errorChart" class="alert alert-danger">
               Lỗi tải biểu đồ: {{ errorChart.message }}
             </div>
-            
+
             <Line v-else :data="chartData" :options="chartOptions" style="height: 350px" />
           </div>
         </div>
       </div>
     </div>
 
-    
+    <!-- Thống kê theo khoảng ngày tùy chỉnh -->
     <div class="row mb-4">
       <div class="col-12">
         <div class="card">
@@ -126,17 +114,10 @@
                 <input type="date" class="form-control" id="endDate" v-model="customDate.end" />
               </div>
               <div class="col-md-2">
-                <button
-                  class="btn btn-secondary w-100"
-                  @click="fetchCustomStats"
-                  :disabled="loadingCustomStats || !customDate.start || !customDate.end"
-                >
-                  <span
-                    v-if="loadingCustomStats"
-                    class="spinner-border spinner-border-sm me-1"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
+                <button class="btn btn-secondary w-100" @click="fetchCustomStats"
+                  :disabled="loadingCustomStats || !customDate.start || !customDate.end">
+                  <span v-if="loadingCustomStats" class="spinner-border spinner-border-sm me-1" role="status"
+                    aria-hidden="true"></span>
                   Xem
                 </button>
               </div>
@@ -144,7 +125,7 @@
             <div v-if="errorCustomStats" class="alert alert-danger mt-2">
               {{ errorCustomStats.message }}
             </div>
-            
+
             <div v-if="loadingCustomStats && !statsCustom" class="text-center text-muted">
               Đang tải...
             </div>
@@ -161,16 +142,13 @@
                 </h4>
               </div>
             </div>
-            <div
-              v-if="
-                !loadingCustomStats &&
-                !statsCustom &&
-                customDate.start &&
-                customDate.end &&
-                !errorCustomStats
-              "
-              class="mt-3 text-muted text-center"
-            >
+            <div v-if="
+              !loadingCustomStats &&
+              !statsCustom &&
+              customDate.start &&
+              customDate.end &&
+              !errorCustomStats
+            " class="mt-3 text-muted text-center">
               Không có dữ liệu cho khoảng ngày đã chọn.
             </div>
           </div>
@@ -205,6 +183,7 @@ import {
   getCurrentMonthStats,
   getBasicStats,
   getRevenueOverTime,
+  getDailyRevenueStats
 } from "@/http/modules/public/statsService.js";
 
 
@@ -218,6 +197,7 @@ ChartJS.register(
   Legend,
   Filler
 );
+
 
 
 const authStore = useAuthStore();
@@ -356,21 +336,29 @@ const fetchSummaryStats = async (type) => {
 
 
 
-const fetchChartData = async (startDate, endDate) => {
+// Fetch dữ liệu biểu đồ doanh thu theo ngày (sử dụng endpoint mới)
+const fetchChartData = async (start, end) => {
   loadingChart.value = true;
   errorChart.value = null;
 
-  chartOptions.value.plugins.title.text = `Doanh thu từ ${formatDate(startDate)} đến ${formatDate(
-    endDate
+  chartOptions.value.plugins.title.text = `Doanh thu từ ${formatDate(start)} đến ${formatDate(
+    end
   )}`;
   try {
-    const response = await getRevenueOverTime(startDate, endDate);
-    const apiData = response.data || [];
+    // ✅ Gọi hàm mới sử dụng endpoint /daily-revenue
+    const response = await getDailyRevenueStats(start, end);
+    console.log("API response:", response); // Debug dữ liệu API
+    const apiData = response || [];// API trả về Array, không phải 1 object chứa data
+    console.log("API data:", apiData); // Debug dữ liệu API
 
     if (!Array.isArray(apiData)) {
       throw new Error("Dữ liệu không đúng định dạng");
     }
 
+    console.log("Processed chart data:", {
+      labels: apiData.map((point) => formatDate(point?.date || "", "dd/MM")),
+      data: apiData.map((point) => point?.revenue || 0),
+    });
 
     chartData.value = {
       labels: apiData.map((point) => formatDate(point?.date || "", "dd/MM")),
@@ -381,6 +369,7 @@ const fetchChartData = async (startDate, endDate) => {
         },
       ],
     };
+
   } catch (err) {
     console.error("Error fetching chart data:", err);
     errorChart.value = err;
@@ -393,6 +382,7 @@ const fetchChartData = async (startDate, endDate) => {
     loadingChart.value = false;
   }
 };
+
 
 
 
@@ -433,7 +423,8 @@ const fetchCustomStats = async () => {
 const formatDate = (dateString, format = "dd/MM/yyyy") => {
   if (!dateString) return "";
   try {
-    const date = new Date(dateString);
+    // Ép định dạng ISO (tránh lỗi trên Safari, Firefox)
+    const date = new Date(dateString + "T00:00:00");
     if (isNaN(date.getTime())) return dateString;
 
     const day = String(date.getDate()).padStart(2, "0");
@@ -462,6 +453,7 @@ onMounted(() => {
     fetchSummaryStats("last7days");
     fetchSummaryStats("currentMonth");
     fetchCustomStats();
+    fetchChartData(customDate.value.start, customDate.value.end); // Thêm dòng này
   } catch (error) {
     console.error("Error during initial data fetching:", error);
   }
@@ -469,9 +461,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin-dashboard {
-  
-}
+.admin-dashboard {}
 
 .card-header {
   font-weight: 500;
@@ -491,7 +481,6 @@ onMounted(() => {
 }
 
 .display-6 {
-  font-weight: 300; 
+  font-weight: 300;
 }
 </style>
-

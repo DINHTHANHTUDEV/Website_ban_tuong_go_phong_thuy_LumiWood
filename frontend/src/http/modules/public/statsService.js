@@ -48,7 +48,7 @@ export const getBasicStats = async () => {
   }
 };
 
-// Doanh thu biểu đồ line chart theo thời gian
+// Thống kê doanh thu theo thời gian
 export const getRevenueOverTime = async (startDateStr, endDateStr) => {
   if (!startDateStr || !endDateStr) {
     throw new Error("Start date and end date are required");
@@ -64,6 +64,25 @@ export const getRevenueOverTime = async (startDateStr, endDateStr) => {
     return res.data;
   } catch (error) {
     console.error("Error in getRevenueOverTime:", error.response?.data || error.message);
+    throw error;
+  }
+};
+// Thống kê doanh thu theo ngày bằng bieu đồ Chart.js
+export const getDailyRevenueStats = async (startDateStr, endDateStr) => {
+  if (!startDateStr || !endDateStr) {
+    throw new Error("Start date and end date are required");
+  }
+  console.log("Sending /daily-revenue without token"); // Debug
+  try {
+    const res = await apiClient.get("/api/statistics/daily-revenue", {
+      params: {
+        start: startDateStr,
+        end: endDateStr,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error in getDailyRevenueStats:", error.response?.data || error.message);
     throw error;
   }
 };

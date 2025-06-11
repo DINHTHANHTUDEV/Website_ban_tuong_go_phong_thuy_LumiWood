@@ -52,24 +52,22 @@ public class DashboardControler {
     // GET /api/statistics/daily-revenue?startDate=2025-05-01&endDate=2025-05-20
     @GetMapping("/daily-revenue")
     public List<DailyRevenueDTO> getDailyRevenueBetween(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam("start")
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("end")
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
 
-        // Chuyển LocalDate sang java.util.Date để phù hợp với Repository
-        Date start = java.sql.Date.valueOf(startDate);
-        Date end = java.sql.Date.valueOf(endDate);
+        List<Object[]> results = ordersRepo.getDailyRevenueNative(startDate, endDate);
 
-        List<Object[]> results = ordersRepo.getDailyRevenueNative(start, end);
-
-        // Chuyển kết quả Object[] thành List<DailyRevenueDTO>
         return results.stream()
                 .map(row -> {
-                    java.sql.Date date = (java.sql.Date) row[0];  // Ép kiểu đúng
+                    java.sql.Date date = (java.sql.Date) row[0];
                     Double revenue = ((Number) row[1]).doubleValue();
                     return new DailyRevenueDTO(date.toLocalDate(), revenue);
                 })
                 .collect(Collectors.toList());
     }
+
     // GET /api/statistics/today
     @GetMapping("/today")
     public TodayStatisticsDTO getTodayStatistics() {
