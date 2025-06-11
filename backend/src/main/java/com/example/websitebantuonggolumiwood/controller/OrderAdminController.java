@@ -78,7 +78,10 @@ public class OrderAdminController {
         }
 
         // Nếu không tìm theo ID, hoặc keyword null/empty thì tìm theo keyword tên, sdt, email
-        String cleanKeyword = (keyword != null && !keyword.isBlank()) ? keyword.trim().toLowerCase() : null;
+        String cleanKeyword = (keyword != null && !keyword.isBlank())
+                ? keyword.trim().replaceAll("\\s+", " ").toLowerCase()
+                : null;
+
 
         Page<OrderAdmin> orderPage = orderAdminRepository.findAllWithFilters(
                 cleanKeyword,

@@ -11,7 +11,7 @@
 
             <div class="col-md-4 col-lg-3">
               <label for="filterKeyword" class="form-label">Tìm kiếm</label>
-              <input type="text" class="form-control form-control-sm" id="filterKeyword" v-model="filters.keyword" placeholder="Mã ĐH, tên, SĐT,....">
+              <input type="text" class="form-control form-control-sm" id="filterKeyword" v-model="filters.keyword" placeholder="Mã ĐH, tên, SĐT, Gmail,....">
             </div>
 
             <div class="col-md-3 col-lg-2">
