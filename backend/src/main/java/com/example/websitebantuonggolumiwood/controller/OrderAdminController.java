@@ -52,12 +52,7 @@ public class OrderAdminController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        String[] sortParams = sort.split(",");
-        Sort.Direction direction = (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc"))
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
-        String sortField = sortParams[0];
-
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+        PageRequest pageable = PageRequest.of(page, size);
 
         LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
@@ -73,31 +68,21 @@ public class OrderAdminController {
                     return ResponseEntity.ok(responsePage);
                 }
             } catch (NumberFormatException ignored) {
-                // Không phải số, bỏ qua tìm ID
+                // Không phải số, bỏ qua tìm theo ID
             }
         }
 
-        // Nếu không tìm theo ID, hoặc keyword null/empty thì tìm theo keyword tên, sdt, email
         String cleanKeyword = (keyword != null && !keyword.isBlank())
-                ? keyword.trim().replaceAll("\\s+", " ").toLowerCase()
+                ? keyword.trim().replaceAll("\\s+", " ")
                 : null;
 
-
         Page<OrderAdmin> orderPage = orderAdminRepository.findAllWithFilters(
-                cleanKeyword,
-                (status != null && !status.isBlank()) ? status.trim() : null,
-                startDateTime,
-                endDateTime,
-                pageable
+                cleanKeyword, status, startDateTime, endDateTime, pageable
         );
 
         Page<OrderDetailAdminDTO> responsePage = orderPage.map(this::mapToOrderDetailResponse);
         return ResponseEntity.ok(responsePage);
     }
-
-
-
-
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Integer id) {
