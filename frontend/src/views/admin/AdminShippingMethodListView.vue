@@ -66,8 +66,11 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { useRouter, useRoute, RouterLink } from 'vue-router';
-import { getAdminShippingMethods, deleteAdminShippingMethod, updateAdminShippingMethod } from '@/http/modules/admin/adminShippingService.js';
+import { useRouter, useRoute } from 'vue-router';
+import {
+  getAdminShippingMethods,
+  updateAdminShippingMethod
+} from '@/http/modules/admin/adminShippingService.js';
 import BasePagination from '@/components/common/BasePagination.vue';
 import { formatCurrency } from '@/utils/formatters';
 
@@ -82,6 +85,7 @@ const totalPages = ref(0);
 const itemsPerPage = ref(10);
 const togglingStatusId = ref(null);
 
+// Fetch danh sách phương thức vận chuyển
 const fetchMethods = async (page = 0) => {
   loading.value = true;
   error.value = null;
@@ -99,7 +103,7 @@ const fetchMethods = async (page = 0) => {
   }
 };
 
-
+// Toggle trạng thái hoạt động
 const confirmToggleStatus = async (method) => {
   if (togglingStatusId.value) return;
   const actionText = method.isActive ? 'ngừng hoạt động' : 'kích hoạt lại';
@@ -107,15 +111,8 @@ const confirmToggleStatus = async (method) => {
 
   togglingStatusId.value = method.id;
   try {
-
-    if (method.isActive) {
-      await deleteAdminShippingMethod(method.id);
-    } else {
-
-      const updatedData = { ...method, isActive: true };
-      await updateAdminShippingMethod(method.id, updatedData);
-    }
-
+    const updatedData = { ...method, isActive: !method.isActive };
+    await updateAdminShippingMethod(method.id, updatedData);
     await fetchMethods(currentPage.value);
   } catch (err) {
     console.error(`Error toggling status for method ${method.id}:`, err);
@@ -125,8 +122,7 @@ const confirmToggleStatus = async (method) => {
   }
 };
 
-
-
+// Format hiển thị thời gian ước tính
 const formatEstimatedDays = (min, max) => {
   if (min === null && max === null) return 'N/A';
   if (min !== null && max !== null) {
@@ -137,11 +133,12 @@ const formatEstimatedDays = (min, max) => {
   return 'N/A';
 };
 
-
+// Theo dõi thay đổi query page để gọi API
 watch(() => route.query.page, (newPageQuery) => {
   fetchMethods(parseInt(newPageQuery || '0', 10));
 }, { immediate: true });
 
+// Thay đổi trang phân trang
 const handlePageChange = (newPage) => {
   router.push({ query: { ...route.query, page: newPage } });
 };
