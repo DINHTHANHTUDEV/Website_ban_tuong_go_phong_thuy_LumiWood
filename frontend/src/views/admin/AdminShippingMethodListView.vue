@@ -17,53 +17,45 @@
     <div v-else-if="methods.length > 0" class="table-responsive card shadow-sm">
       <table class="table table-hover table-striped mb-0 align-middle">
         <thead class="table-light">
-        <tr>
-          <th scope="col">Tên Phương thức</th>
-          <th scope="col">Mô tả</th>
-          <th scope="col" class="text-end">Phí cơ bản</th>
-          <th scope="col" class="text-center">Thời gian dự kiến</th>
-          <th scope="col" class="text-center">Trạng thái</th>
-          <th scope="col" class="text-center">Hành Động</th>
-        </tr>
+          <tr>
+            <th scope="col">Tên Phương thức</th>
+            <th scope="col">Mô tả</th>
+            <th scope="col" class="text-end">Phí cơ bản</th>
+            <th scope="col" class="text-center">Thời gian dự kiến</th>
+            <th scope="col" class="text-center">Trạng thái</th>
+            <th scope="col" class="text-center">Hành Động</th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="method in methods" :key="method.id">
-          <td class="fw-medium">{{ method.name }}</td>
-          <td>{{ method.description || 'N/A' }}</td>
-          <td class="text-end">{{ formatCurrency(method.baseCost) }}</td>
-          <td class="text-center">{{ formatEstimatedDays(method.estimatedDaysMin, method.estimatedDaysMax) }}</td>
-          <td class="text-center">
+          <tr v-for="method in methods" :key="method.id">
+            <td class="fw-medium">{{ method.name }}</td>
+            <td>{{ method.description || 'N/A' }}</td>
+            <td class="text-end">{{ formatCurrency(method.baseCost) }}</td>
+            <td class="text-center">{{ formatEstimatedDays(method.estimatedDaysMin, method.estimatedDaysMax) }}</td>
+            <td class="text-center">
               <span class="badge rounded-pill" :class="method.isActive ? 'text-bg-success' : 'text-bg-secondary'">
                 {{ method.isActive ? 'Hoạt động' : 'Ngừng' }}
               </span>
-          </td>
-          <td class="text-center">
-            <router-link
-              :to="{ name: 'adminShippingMethodEdit', params: { id: method.id } }"
-              class="btn btn-sm btn-outline-secondary me-1" title="Sửa">
-              <i class="bi bi-pencil-square"></i>
-            </router-link>
-            <button
-              class="btn btn-sm"
-              :class="method.isActive ? 'btn-outline-danger' : 'btn-outline-success'"
-              :title="method.isActive ? 'Ngừng hoạt động' : 'Kích hoạt lại'"
-              @click="confirmToggleStatus(method)"
-              :disabled="togglingStatusId === method.id">
-              <span v-if="togglingStatusId === method.id" class="spinner-border spinner-border-sm"></span>
-              <i v-else :class="method.isActive ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-            </button>
-          </td>
-        </tr>
+            </td>
+            <td class="text-center">
+              <router-link :to="{ name: 'adminShippingMethodEdit', params: { id: method.id } }"
+                class="btn btn-sm btn-outline-secondary me-1" title="Sửa">
+                <i class="bi bi-pencil-square"></i>
+              </router-link>
+              <button class="btn btn-sm" :class="method.isActive ? 'btn-outline-danger' : 'btn-outline-success'"
+                :title="method.isActive ? 'Ngừng hoạt động' : 'Kích hoạt lại'" @click="confirmToggleStatus(method)"
+                :disabled="togglingStatusId === method.id">
+                <span v-if="togglingStatusId === method.id" class="spinner-border spinner-border-sm"></span>
+                <i v-else :class="method.isActive ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </td>
+          </tr>
         </tbody>
       </table>
 
       <div class="card-footer bg-light border-top-0" v-if="totalPages > 1">
-        <BasePagination
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="handlePageChange"
-          class="mt-3 d-flex justify-content-center mb-0"
-        />
+        <BasePagination :current-page="currentPage" :total-pages="totalPages" @page-change="handlePageChange"
+          class="mt-3 d-flex justify-content-center mb-0" />
       </div>
     </div>
 
@@ -155,7 +147,4 @@ const handlePageChange = (newPage) => {
 };
 </script>
 
-<style scoped>
-
-</style>
-
+<style scoped></style>

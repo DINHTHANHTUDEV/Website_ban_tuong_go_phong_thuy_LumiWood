@@ -18,7 +18,7 @@
     </div>
 
     <div v-else-if="order" class="order-detail-content">
-      <h1 class="mb-4">Chi tiết Đơn hàng <strong class="text-primary">#{{ order.orderId }}</strong></h1>
+      <h1 class="mb-4">Chi tiết Đơn hàng <strong class="text-primary">#{{ order.id }}</strong></h1>
 
       <div class="row g-4">
 
@@ -73,7 +73,8 @@
                 </dd>
 
                 <dt class="col-sm-4">Vận chuyển:</dt>
-                <dd class="col-sm-8">{{ order.shippingMethodName || 'N/A' }} ({{ formatCurrency(order.shippingCost) }})</dd>
+                <dd class="col-sm-8">{{ order.shippingMethodName || 'N/A' }} ({{ formatCurrency(order.shippingCost) }})
+                </dd>
 
                 <dt class="col-sm-4" v-if="order.promotionCode">Khuyến mãi:</dt>
                 <dd class="col-sm-8 text-success" v-if="order.promotionCode">
@@ -92,16 +93,12 @@
             <div class="card-body p-0">
               <ul class="list-group list-group-flush">
                 <li v-for="item in order.items" :key="item.productId" class="list-group-item d-flex align-items-center">
-                  <img
-                    :src="item.productImageUrl || defaultImage"
-                    :alt="item.productName"
-                    width="50"
-                    class="me-3 rounded border"
-                    @error="onImageError"
-                  >
+                  <img :src="item.productImageUrl || defaultImage" :alt="item.productName" width="50"
+                    class="me-3 rounded border" @error="onImageError">
                   <div class="flex-grow-1">
                     <div class="fw-medium">{{ item.productName }}</div>
-                    <small class="text-muted">SL: {{ item.quantity }} x {{ formatCurrency(item.priceAtPurchase) }}</small>
+                    <small class="text-muted">SL: {{ item.quantity }} x {{ formatCurrency(item.priceAtPurchase)
+                    }}</small>
                   </div>
                   <span class="fw-bold ms-2">{{ formatCurrency(item.quantity * item.priceAtPurchase) }}</span>
                 </li>
@@ -123,12 +120,8 @@
 
               <div v-else>
                 <label for="orderStatusSelect" class="form-label">Chọn trạng thái mới:</label>
-                <select
-                  id="orderStatusSelect"
-                  class="form-select"
-                  v-model="selectedNewStatus"
-                  :disabled="updatingStatus"
-                >
+                <select id="orderStatusSelect" class="form-select" v-model="selectedNewStatus"
+                  :disabled="updatingStatus">
                   <option disabled value="">-- Chọn trạng thái --</option>
                   <option v-for="status in availableNextStatuses" :key="status" :value="status">
                     {{ formatStatus(status) }}
@@ -139,14 +132,8 @@
                   <label for="cancelReason" class="form-label">
                     Lý do hủy đơn hàng <span class="text-danger">*</span>:
                   </label>
-                  <textarea
-                    id="cancelReason"
-                    class="form-control"
-                    rows="3"
-                    v-model="cancelReason"
-                    :disabled="updatingStatus"
-                    placeholder="Nhập lý do hủy đơn hàng"
-                  ></textarea>
+                  <textarea id="cancelReason" class="form-control" rows="3" v-model="cancelReason"
+                    :disabled="updatingStatus" placeholder="Nhập lý do hủy đơn hàng"></textarea>
                 </div>
 
                 <div v-if="updateError" class="alert alert-danger small p-2 mt-2">{{ updateError }}</div>
@@ -154,12 +141,10 @@
                   Cập nhật trạng thái thành công!
                 </div>
 
-                <button
-                  class="btn btn-primary w-100 mt-3"
-                  @click="handleUpdateStatus"
-                  :disabled="updatingStatus || !selectedNewStatus"
-                >
-                  <span v-if="updatingStatus" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <button class="btn btn-primary w-100 mt-3" @click="handleUpdateStatus"
+                  :disabled="updatingStatus || !selectedNewStatus">
+                  <span v-if="updatingStatus" class="spinner-border spinner-border-sm me-2" role="status"
+                    aria-hidden="true"></span>
                   {{ updatingStatus ? 'Đang cập nhật...' : 'Lưu thay đổi' }}
                 </button>
               </div>
@@ -349,9 +334,11 @@ watch(internalOrderId, fetchOrderDetail, { immediate: true });
   font-weight: 500;
   color: #6c757d;
 }
+
 .admin-order-detail-view dd {
   margin-bottom: 0.5rem;
 }
+
 .badge.fs-6 {
   padding: 0.4em 0.8em;
 }
