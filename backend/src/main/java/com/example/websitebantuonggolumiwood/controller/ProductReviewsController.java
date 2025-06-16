@@ -1,5 +1,6 @@
 package com.example.websitebantuonggolumiwood.controller;
 
+import com.example.websitebantuonggolumiwood.dto.ProductReviewDTO;
 import com.example.websitebantuonggolumiwood.entity.ProductReviews;
 import com.example.websitebantuonggolumiwood.service.ProductReviewsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +21,14 @@ public class ProductReviewsController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Page<ProductReviews>> getReviewsByProduct(
+    public ResponseEntity<Page<ProductReviewDTO>> getReviewsByProduct(
             @PathVariable Integer productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductReviews> reviews = productReviewsService.getApprovedReviewsByProductId(productId, pageable);
-        return ResponseEntity.ok(reviews);
+        Page<ProductReviewDTO> reviewDTOs = productReviewsService.getApprovedReviewDTOsByProductId(productId, pageable);
+        return ResponseEntity.ok(reviewDTOs);
     }
 
 }
