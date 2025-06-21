@@ -215,33 +215,37 @@
             </div>
 
             <div class="col-12">
+              <!-- Label -->
               <label class="form-label mb-2">Áp dụng cho Bậc Khách hàng:</label>
               <div class="d-flex flex-wrap gap-3">
+                <!-- Checkbox "Tất cả" -->
                 <div class="form-check">
                   <input
                     class="form-check-input"
                     type="checkbox"
                     id="tierAll"
-                    :checked="isAllTiersSelected"
-                    @change="toggleAllTiers"
+                    :checked="selectedTiers.length === 0"
+                    @change="selectAllTiers"
                     :disabled="submitting"
                   />
                   <label class="form-check-label fw-medium" for="tierAll">Tất cả</label>
                 </div>
 
+                <!-- Các checkbox tier -->
                 <div class="form-check" v-for="tier in availableTiers" :key="tier.code">
                   <input
                     class="form-check-input"
                     type="checkbox"
                     :id="'tier-' + tier.code"
-                    :value="tier.code"
-                    v-model="selectedTiers"
-                    :disabled="submitting || isAllTiersSelected"
+                    :checked="selectedTiers.includes(tier.code)"
+                    @change="() => toggleTier(tier.code)"
+                    :disabled="submitting"
                   />
                   <label class="form-check-label" :for="'tier-' + tier.code">{{ tier.name }}</label>
                 </div>
               </div>
 
+              <!-- Hiển thị lỗi nếu có -->
               <div v-if="validationErrors.targetTiers" class="text-danger small mt-1">
                 {{ validationErrors.targetTiers }}
               </div>
@@ -326,8 +330,8 @@ const formData = reactive({
   isActive: true,
 });
 
-const selectedTiers = ref([]);
-const availableTiers = ref(allTiers || []);
+// const selectedTiers = ref([]);
+// const availableTiers = ref(allTiers || []);
 
 const loadingInitial = ref(false);
 const initialError = ref(null);
@@ -337,11 +341,20 @@ const validationErrors = reactive({});
 
 const isAllTiersSelected = computed(() => selectedTiers.value.length === 0);
 
+// const toggleAllTiers = (event) => {
+//   if (event.target.checked) {
+//     selectedTiers.value = [];
+//   }
+// };
 const toggleAllTiers = (event) => {
   if (event.target.checked) {
-    selectedTiers.value = [];
+    selectedTiers.value = []; // nếu chọn Tất cả thì xóa hết tier
+  } else {
+    // nếu bỏ chọn Tất cả thì vẫn không làm gì (đợi user chọn tier)
+    selectedTiers.value = []; // reset luôn cho chắc
   }
 };
+
 const fetchPromotionData = async () => {
   if (!isEditMode.value) return;
 
@@ -559,7 +572,25 @@ onMounted(() => {
     formData.startDate = formatDateTimeForInput(new Date());
   }
 });
+// Tier đang được chọn
+const selectedTiers = ref([]);
 
+// Danh sách các tier khả dụng (bạn có thể thay bằng API hoặc formatter)
+const availableTiers = ref(allTiers || []); // giả sử bạn có import từ utils
+
+// Chọn "Tất cả"
+const selectAllTiers = () => {
+  selectedTiers.value = [];
+};
+
+// Chọn / bỏ chọn một tier
+const toggleTier = (tierCode) => {
+  if (selectedTiers.value.includes(tierCode)) {
+    selectedTiers.value = []; // nếu đã chọn, bấm lần nữa thì bỏ chọn
+  } else {
+    selectedTiers.value = [tierCode]; // luôn chỉ chọn 1 tier
+  }
+};
 
 </script>
 
