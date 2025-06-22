@@ -1,8 +1,6 @@
-
-
 <template>
   <div class="product-detail-view container py-4">
-    
+
     <div
       v-if="loading && !product"
       class="alert alert-info text-center py-5 fs-5 shadow-sm"
@@ -14,7 +12,7 @@
       Đang tải thông tin sản phẩm...
     </div>
 
-    
+
     <div v-else-if="error" class="alert alert-danger text-center py-5 fs-5 shadow-sm" role="alert">
       <i class="bi bi-exclamation-triangle-fill me-2"></i> Lỗi tải dữ liệu:
       {{ error.message || "Không thể tải chi tiết sản phẩm." }}
@@ -30,11 +28,11 @@
       </p>
     </div>
 
-    
+
     <div v-else-if="product" class="product-content">
-      
+
       <div class="row g-4 g-lg-5 mb-5">
-        
+
         <div class="col-lg-6 text-center product-gallery">
           <img
             :src="product.imageUrl || defaultImage"
@@ -43,12 +41,12 @@
             @error="onImageError"
             loading="lazy"
           />
-          
+
         </div>
 
-        
+
         <div class="col-lg-6 product-info">
-          
+
           <div v-if="product.category" class="mb-2">
             <router-link
               :to="{
@@ -61,10 +59,10 @@
             </router-link>
           </div>
 
-          
+
           <h1 class="product-name h2 mb-2">{{ product.name }}</h1>
 
-          
+
           <div class="mb-3 product-rating-summary">
             <span
               v-if="product.averageRating > 0"
@@ -100,12 +98,12 @@
             </a>
           </div>
 
-          
+
           <p class="product-price fs-3 fw-bold text-danger mb-4">
             {{ formatCurrency(product.price) }}
           </p>
 
-          
+
           <div class="product-attributes bg-light p-3 rounded mb-4 border">
             <h5 class="h6 mb-3">Thông tin chi tiết:</h5>
             <p v-if="product.dimensions" class="mb-2 small">
@@ -126,9 +124,9 @@
             </p>
           </div>
 
-          
+
           <div class="product-actions mb-4" v-if="!authStore.isAdmin">
-            
+
             <div
               class="mb-3 quantity-selector d-flex align-items-center"
               style="max-width: 150px"
@@ -167,14 +165,14 @@
                 </button>
               </div>
             </div>
-            
+
             <div v-if="product.stock <= 0" class="alert alert-warning p-2 small">
               Sản phẩm tạm hết hàng
             </div>
 
-            
+
             <div class="d-flex flex-wrap gap-2 mt-2">
-              
+
               <button
                 type="button"
                 class="btn btn-success btn-lg flex-grow-1"
@@ -190,7 +188,7 @@
                 <i v-else class="bi bi-cart-plus me-1"></i>
                 {{ addingToCart ? "Đang thêm..." : "Thêm vào giỏ" }}
               </button>
-              
+
               <button
                 type="button"
                 @click="openZaloChat"
@@ -201,7 +199,7 @@
               </button>
             </div>
 
-            
+
             <div
               v-if="addToCartMessage"
               class="alert mt-3 p-2 small"
@@ -209,7 +207,7 @@
             >
               {{ addToCartMessage }}
             </div>
-            
+
             <p
               v-if="product && product.stock <= 0 && !addToCartMessage"
               class="text-danger small mt-2"
@@ -217,16 +215,16 @@
               Sản phẩm hiện đang hết hàng.
             </p>
           </div>
-          
 
-          
+
+
           <div v-if="product.sku" class="product-meta text-muted small mb-3">
             SKU: {{ product.sku }}
           </div>
         </div>
       </div>
 
-      
+
       <div class="product-details-tabs">
         <ul class="nav nav-tabs mb-0" id="productTab" role="tablist">
           <li class="nav-item" role="presentation">
@@ -269,7 +267,7 @@
           class="tab-content p-3 p-lg-4 border border-top-0 rounded-bottom shadow-sm"
           id="productTabContent"
         >
-          
+
           <div
             class="tab-pane fade show active"
             id="description-content"
@@ -285,7 +283,7 @@
             <p v-else class="text-muted fst-italic">Sản phẩm này chưa có mô tả chi tiết.</p>
           </div>
 
-          
+
           <div
             class="tab-pane fade"
             id="reviews-content"
@@ -294,7 +292,7 @@
           >
             <h3 class="h5 mb-3 d-lg-none">Đánh giá sản phẩm</h3>
 
-            
+
             <div
               class="mb-3 text-end"
               v-if="authStore.isAuthenticated && !authStore.isAdmin && !showReviewForm"
@@ -304,7 +302,7 @@
               </button>
             </div>
 
-            
+
             <div
               v-if="authStore.isAuthenticated && !authStore.isAdmin && showReviewForm"
               class="card mb-4 shadow-sm border bg-light"
@@ -401,7 +399,7 @@
                 </form>
               </div>
             </div>
-            
+
             <div
               v-else-if="!authStore.isAuthenticated && !loadingReviews"
               class="alert alert-info small p-3 text-center shadow-sm"
@@ -415,7 +413,7 @@
               để viết đánh giá cho sản phẩm này.
             </div>
 
-            
+
             <div class="reviews-list-section mt-4">
               <h4
                 class="h6 mb-3 border-bottom pb-2"
@@ -423,18 +421,18 @@
               >
                 Tất cả đánh giá ({{ product.reviewCount || reviews.length }})
               </h4>
-              
+
               <div v-if="loadingReviews" class="text-center my-5 text-muted">
                 <div class="spinner-border spinner-border-sm text-secondary" role="status">
                   <span class="visually-hidden">Loading reviews...</span>
                 </div>
                 <span class="ms-2">Đang tải đánh giá...</span>
               </div>
-              
+
               <div v-else-if="errorReviews" class="alert alert-warning text-center">
                 <i class="bi bi-exclamation-circle me-1"></i> {{ errorReviews }}
               </div>
-              
+
               <div v-else-if="reviews.length > 0">
                 <div
                   v-for="review in reviews"
@@ -466,9 +464,9 @@
                   <p v-else class="text-muted fst-italic small mb-2">
                     Người dùng này không để lại bình luận.
                   </p>
-                  
-                  
-                  
+
+
+
                 </div>
                 <BasePagination
                   v-if="reviewsTotalPages > 1"
@@ -478,7 +476,7 @@
                   class="mt-4 d-flex justify-content-center"
                 />
               </div>
-              
+
               <div
                 v-else-if="!loadingReviews && !errorReviews"
                 class="text-muted text-center my-4 p-4 bg-light rounded border"
@@ -492,7 +490,7 @@
       </div>
     </div>
 
-    
+
     <div
       v-else-if="!loading && !product && !error"
       class="alert alert-warning text-center py-5 fs-5 shadow-sm"
@@ -554,11 +552,11 @@ const replyingTo = ref(null);
 
 
 const formatCurrency = (value) => {
-  
+
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value ?? 0);
 };
 const formatFullDateTime = (dateString) => {
-  
+
   if (!dateString) return "";
   try {
     return new Date(dateString).toLocaleString("vi-VN", {
@@ -573,7 +571,7 @@ const formatFullDateTime = (dateString) => {
   }
 };
 const formatDateRelative = (dateString) => {
-  
+
   if (!dateString) return "";
   try {
     const date = new Date(dateString);
@@ -594,12 +592,12 @@ const formatDateRelative = (dateString) => {
   }
 };
 const onImageError = (event) => {
-  
+
   console.warn(`Image failed to load: ${event.target.src}. Using placeholder.`);
   event.target.src = defaultImage;
 };
 const scrollToReviews = () => {
-  
+
   const reviewsElement = document.getElementById("reviews-content");
   if (reviewsElement) {
     const reviewsTab = new bootstrap.Tab(document.getElementById("reviews-tab"));
@@ -612,7 +610,7 @@ const scrollToReviews = () => {
 
 
 const fetchProductDetail = async () => {
-  
+
   loading.value = true;
   error.value = null;
   product.value = null;
@@ -639,7 +637,7 @@ const fetchProductDetail = async () => {
   }
 };
 const fetchProductReviews = async (page = 0) => {
-  
+
   if (!product.value?.id) return;
   loadingReviews.value = true;
   errorReviews.value = null;
@@ -670,7 +668,7 @@ const fetchProductReviews = async (page = 0) => {
 
 
 const changeQuantity = (amount) => {
-  
+
   const currentStock = product.value?.stock ?? 0;
   let newQuantity = selectedQuantity.value + amount;
   if (newQuantity < 1) newQuantity = 1;
@@ -682,7 +680,7 @@ const changeQuantity = (amount) => {
   selectedQuantity.value = newQuantity;
 };
 const validateQuantity = () => {
-  
+
   const currentStock = product.value?.stock ?? 0;
   if (!Number.isInteger(selectedQuantity.value) || selectedQuantity.value < 1) {
     selectedQuantity.value = 1;
@@ -691,7 +689,7 @@ const validateQuantity = () => {
   }
 };
 const handleAddToCart = async () => {
-  
+
   if (!authStore.isAuthenticated) {
     authStore.setReturnUrl(route.fullPath);
     router.push({ name: "login" });
@@ -730,13 +728,13 @@ const handleAddToCart = async () => {
 
 
 const handleReviewPageChange = (newPage) => {
-  
+
   fetchProductReviews(newPage - 1);
   const reviewsElement = document.getElementById("reviews-content");
   reviewsElement?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 const toggleReviewForm = () => {
-  
+
   showReviewForm.value = !showReviewForm.value;
   if (showReviewForm.value) {
     reviewSubmitError.value = null;
@@ -750,12 +748,12 @@ const toggleReviewForm = () => {
   }
 };
 const setRating = (star) => {
-  
+
   newReview.rating = star;
   reviewFormClientError.rating = null;
 };
 const validateReviewForm = () => {
-  
+
   let isValid = true;
   reviewFormClientError.rating = null;
   reviewFormClientError.comment = null;
@@ -770,7 +768,7 @@ const validateReviewForm = () => {
   return isValid;
 };
 const submitReview = async () => {
-  
+
   if (!validateReviewForm()) return;
   if (!product.value?.id) {
     reviewSubmitError.value = "Lỗi: Không tìm thấy ID sản phẩm.";
@@ -791,7 +789,7 @@ const submitReview = async () => {
     }, 2500);
     setTimeout(() => {
       fetchProductReviews(0);
-      fetchProductDetail(); 
+      fetchProductDetail();
     }, 500);
   } catch (err) {
     console.error("Error submitting review:", err);
@@ -807,7 +805,7 @@ const submitReview = async () => {
   }
 };
 const handleReplyClick = (reviewId) => {
-  
+
   if (!authStore.isAuthenticated) {
     router.push({ name: "login", query: { returnUrl: route.fullPath } });
     return;
@@ -833,7 +831,7 @@ const openZaloChat = () => {
 
 
 const resetReviewState = () => {
-  
+
   reviews.value = [];
   loadingReviews.value = false;
   errorReviews.value = null;
@@ -854,7 +852,7 @@ const resetReviewState = () => {
 
 
 onMounted(async () => {
-  
+
   await fetchProductDetail();
   if (product.value?.id) {
     fetchProductReviews();
@@ -863,7 +861,7 @@ onMounted(async () => {
 watch(
   () => route.params.slug,
   async (newSlug, oldSlug) => {
-    
+
     if (newSlug && newSlug !== oldSlug && route.name === "productDetail") {
       await fetchProductDetail();
       if (product.value?.id) {
