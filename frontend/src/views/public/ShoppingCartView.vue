@@ -2,8 +2,8 @@
   <div class="shopping-cart-view container mt-4 mb-5">
     <h1 class="text-center mb-4">Giỏ Hàng Của Bạn</h1>
 
-    
-    
+
+
     <div
       v-if="cartStore.isLoading && !cartStore.cartId && cartStore.items.length === 0"
       class="text-center my-5 py-5"
@@ -14,8 +14,8 @@
       <p class="mt-3 text-muted">Đang tải giỏ hàng của bạn...</p>
     </div>
 
-    
-    
+
+
     <div
       v-else-if="cartStore.error && !cartStore.cartId && cartStore.items.length === 0"
       class="alert alert-warning text-center py-4"
@@ -26,8 +26,8 @@
       <button @click="retryFetchCart" class="btn btn-sm btn-outline-secondary mt-2">Thử lại</button>
     </div>
 
-    
-    
+
+
     <div
       v-else-if="!cartStore.isLoading && cartStore.items.length === 0"
       class="alert alert-info text-center py-5"
@@ -39,21 +39,21 @@
       </router-link>
     </div>
 
-    
-    
+
+
     <div v-else>
-      
+
       <div v-if="cartStore.error && cartStore.cartId" class="alert alert-danger small p-2 mb-3">
         <i class="bi bi-exclamation-circle me-1"></i> Hết hàng.
       </div>
 
       <div class="row g-4">
-        
+
         <div class="col-lg-8 mb-4 mb-lg-0">
           <div class="card shadow-sm">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Sản phẩm trong giỏ ({{ cartStore.totalItemsCount }} sản phẩm)</h5>
-              
+
               <button
                 class="btn btn-outline-danger btn-sm"
                 @click="clearCart"
@@ -70,14 +70,14 @@
             </div>
             <div class="card-body p-0">
               <ul class="list-group list-group-flush">
-                
+
                 <li
                   v-for="item in cartStore.items"
                   :key="item.productId"
                   class="list-group-item px-3 py-3"
                 >
                   <div class="row align-items-center">
-                    
+
                     <div class="col-3 col-md-2 col-lg-1">
                       <img
                         :src="item.imageUrl || defaultImage"
@@ -86,20 +86,22 @@
                         @error="onImageError"
                       />
                     </div>
-                    
+
                     <div class="col-9 col-md-5 col-lg-6">
                       <router-link
                         :to="{
                           name: 'productDetail',
-                          params: { slug: item.slug || item.productId },
+                          params: { slug: item.productSlug || item.productId },
                         }"
                         class="text-decoration-none text-dark fw-medium mb-1 d-block line-clamp-2"
-                        >{{ item.productName }}</router-link
                       >
+                        {{ item.productName }}
+                      </router-link>
+
                       <small class="text-muted d-block"
                         >Đơn giá: {{ formatCurrency(item.price) }}</small
                       >
-                      
+
                       <button
                         class="btn btn-link text-danger btn-sm p-0 mt-1 d-md-none"
                         @click="removeFromCart(item.productId)"
@@ -112,7 +114,7 @@
                         <i v-else class="bi bi-trash"></i> Xóa
                       </button>
                     </div>
-                    
+
                     <div class="col-6 col-md-3 col-lg-2 mt-2 mt-md-0">
                       <div class="input-group input-group-sm quantity-control">
                         <button
@@ -144,7 +146,7 @@
                         >
                           +
                         </button>
-                        
+
                         <span
                           v-if="updatingItemId === item.productId"
                           class="spinner-border spinner-border-sm ms-1 align-self-center"
@@ -153,12 +155,12 @@
                         ></span>
                       </div>
                     </div>
-                    
+
                     <div class="col-6 col-md-2 col-lg-3 text-end mt-2 mt-md-0">
                       <span class="fw-bold d-block mb-1">{{
                         formatCurrency(item.price * item.quantity)
                       }}</span>
-                      
+
                       <button
                         class="btn btn-link text-danger btn-sm p-0 d-none d-md-inline-block"
                         @click="removeFromCart(item.productId)"
@@ -179,12 +181,12 @@
           </div>
         </div>
 
-        
+
         <div class="col-lg-4">
           <div class="card shadow-sm sticky-top" style="top: 80px">
             <div class="card-header bg-light"><h5 class="mb-0">Tóm Tắt Đơn Hàng</h5></div>
             <div class="card-body">
-              
+
               <div class="mb-3">
                 <label for="promotionCode" class="form-label">Mã khuyến mãi</label>
                 <div class="input-group">
@@ -216,7 +218,7 @@
                     {{ applyingPromotion ? "Đang..." : "Áp dụng" }}
                   </button>
                 </div>
-                
+
                 <div v-if="promotionError" class="text-danger small mt-2">{{ promotionError }}</div>
                 <div
                   v-if="appliedPromotion && appliedPromotion.success"
@@ -233,11 +235,11 @@
                 </div>
               </div>
               <hr />
-              
+
               <ul class="list-group list-group-flush mb-3">
                 <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                   <span>Tạm tính:</span>
-                  
+
                   <span>{{ formatCurrency(cartStore.subtotal) }}</span>
                 </li>
                 <li
@@ -251,11 +253,11 @@
                   class="list-group-item d-flex justify-content-between align-items-center px-0 fw-bold fs-5 border-top pt-2"
                 >
                   <span>Tổng cộng:</span>
-                  
+
                   <span>{{ formatCurrency(finalTotal) }}</span>
                 </li>
               </ul>
-              
+
               <div class="d-grid">
                 <button
                   class="btn btn-primary btn-lg"
@@ -563,17 +565,17 @@ watch(
 
 <style scoped>
 .shopping-cart-view {
-  min-height: 70vh; 
+  min-height: 70vh;
 }
 
 .cart-item-image {
-  max-width: 60px; 
-  height: 60px; 
+  max-width: 60px;
+  height: 60px;
   object-fit: cover;
 }
 
 .quantity-control input.no-spinners {
-  
+
   -moz-appearance: textfield;
 }
 
@@ -590,8 +592,8 @@ watch(
 }
 
 .quantity-control .btn {
-  padding: 0.25rem 0.5rem; 
-  line-height: 1; 
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
 }
 
 .quantity-control .spinner-border-sm {
@@ -603,24 +605,24 @@ watch(
 @media (min-width: 992px) {
   .sticky-top {
     position: sticky;
-    top: 80px; 
-    z-index: 1019; 
+    top: 80px;
+    z-index: 1019;
   }
 }
 
 
 .btn-link.text-danger {
-  text-decoration: none; 
-  vertical-align: middle; 
+  text-decoration: none;
+  vertical-align: middle;
 }
 .btn-link.text-danger:hover {
-  text-decoration: underline; 
+  text-decoration: underline;
 }
 
 .btn-link.text-danger .spinner-border-sm {
   width: 0.8rem;
   height: 0.8rem;
-  vertical-align: text-bottom; 
+  vertical-align: text-bottom;
 }
 
 
@@ -634,7 +636,7 @@ watch(
 
 
 .d-md-none.btn-link {
-  line-height: 1; 
+  line-height: 1;
 }
 </style>
 
