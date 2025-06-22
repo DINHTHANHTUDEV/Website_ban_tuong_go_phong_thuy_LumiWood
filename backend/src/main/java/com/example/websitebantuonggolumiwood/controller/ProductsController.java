@@ -46,24 +46,21 @@ public class ProductsController {
     @GetMapping
     public ResponseEntity<Page<ProductsEntity>> filterProducts(
             @RequestParam(required = false) List<Integer> categories,
-
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) String materials,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int sizePerPage,
-            @RequestParam(defaultValue = "price,asc") String sort,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String size
+            @RequestParam(required = false) String sizeCategory,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
     ) {
-        String[] sortParts = sort.split(",");
-        String sortBy = sortParts[0];
-        String sortDir = sortParts.length > 1 ? sortParts[1] : "asc";
-        Page<ProductsEntity> products = productsService.filterProducts(
+        Page<ProductsEntity> result = productsService.filterProducts(
                 categories, minPrice, maxPrice, materials,
-                page, sizePerPage, sortBy, sortDir, keyword, size
+                page, size, sortBy, sortDir, keyword, sizeCategory
         );
-        return ResponseEntity.ok(products);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/slug/{slug}")

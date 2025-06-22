@@ -8,7 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/productReview")
@@ -30,5 +34,17 @@ public class ProductReviewsController {
         Page<ProductReviewDTO> reviewDTOs = productReviewsService.getApprovedReviewDTOsByProductId(productId, pageable);
         return ResponseEntity.ok(reviewDTOs);
     }
+    // create review where product slug
+
+    @PostMapping("/add/{productId}")
+    public ResponseEntity<ProductReviews> addReview(
+            @PathVariable Integer productId,
+            @RequestBody ProductReviews review,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        ProductReviews savedReview = productReviewsService.addReview(productId, review, userDetails.getUsername());
+        return ResponseEntity.ok(savedReview);
+    }
+
 
 }

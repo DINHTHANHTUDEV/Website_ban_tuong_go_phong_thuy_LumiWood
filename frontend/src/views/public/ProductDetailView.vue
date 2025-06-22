@@ -320,7 +320,7 @@
                   ></button>
                 </div>
                 <form @submit.prevent="submitReview" novalidate>
-                  {}
+                  <!-- {} -->
                   <div class="mb-3">
                     <label class="form-label d-block mb-1"
                       >Xếp hạng <span class="text-danger">*</span>:</label
@@ -355,7 +355,7 @@
                       {{ reviewFormClientError.rating }}
                     </div>
                   </div>
-                  {}
+                  <!-- {} -->
                   <div class="mb-3">
                     <label for="reviewComment" class="form-label">Bình luận:</label>
                     <textarea
@@ -377,14 +377,14 @@
                       >
                     </div>
                   </div>
-                  {}
+                  <!-- {} -->
                   <div v-if="reviewSubmitError" class="alert alert-danger p-2 small">
                     {{ reviewSubmitError }}
                   </div>
                   <div v-if="reviewSubmitSuccess" class="alert alert-success p-2 small">
                     {{ reviewSubmitSuccess }}
                   </div>
-                  {}
+                  <!-- {} -->
                   <button
                     type="submit"
                     class="btn btn-primary px-4"
@@ -515,7 +515,7 @@ import { getProductBySlug } from "@/http/modules/public/productService.js";
 import defaultImage from "@/assets/images/placeholder.png";
 import { useAuthStore } from "@/store/auth.js";
 import { useCartStore } from "@/store/cart.js";
-import { getProductReviews } from "@/http/modules/public/reviewService.js";//, createProductReview
+import { getProductReviews, createProductReview} from "@/http/modules/public/reviewService.js"; 
 import BasePagination from "@/components/common/BasePagination.vue";
 
 console.log("check getProductBySlug: ", getProductBySlug);

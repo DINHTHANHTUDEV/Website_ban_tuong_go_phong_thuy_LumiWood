@@ -4,17 +4,19 @@ import com.example.websitebantuonggolumiwood.entity.ProductsEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductSpecification {
     public static Specification<ProductsEntity> filterBy(
-            List<Integer> categories, Double minPrice, Double maxPrice, String material, String keyword, String sizeCategory) {
-
+            List<Integer> categories,
+            Double minPrice,
+            Double maxPrice,
+            String material
+    ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-
             predicates.add(cb.equal(root.get("isActive"), true));
 
             if (categories != null && !categories.isEmpty()) {
@@ -29,25 +31,18 @@ public class ProductSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
             }
 
-            if (material != null && !material.isEmpty()) {
+            if (material != null && !material.trim().isEmpty()) {
                 predicates.add(cb.equal(root.get("material"), material));
-            }
-
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                String pattern = "%" + keyword.toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("name")), pattern),
-                        cb.like(cb.lower(root.get("description")), pattern)
-                ));
-            }
-
-            if (sizeCategory != null && !sizeCategory.isEmpty()) {
-                predicates.add(cb.isNotNull(root.get("dimensions")));
-                predicates.add(cb.notEqual(root.get("dimensions"), ""));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    public static String removeVietnameseAccents(String input) {
+        if (input == null) return "";
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        return normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 
 

@@ -134,15 +134,18 @@
 
             
             <div class="col-md-6">
-              <label for="productDimensions" class="form-label">Kích thước</label>
-              <input
-                type="text"
-                class="form-control"
-                id="productDimensions"
-                v-model.trim="formData.dimensions"
-                :disabled="submitting"
-              />
-            </div>
+          <label for="productDimensions" class="form-label">Kích thước</label>
+          <input
+            type="text"
+            class="form-control"
+            :class="{ 'is-invalid': validationErrors.dimensions }"
+            id="productDimensions"
+            v-model.trim="formData.dimensions"
+            :disabled="submitting"
+          />
+          <div class="invalid-feedback">{{ validationErrors.dimensions }}</div>
+        </div>
+
 
             
             <div class="col-md-6">
@@ -410,6 +413,13 @@ const validateForm = () => {
   ) {
     validationErrors.stock = "Tồn kho phải là số nguyên không âm.";
     isValid = false;
+  }
+  if (formData.dimensions.trim()) {
+    const dimensionsPattern = /^\d+(\.\d+)?x\d+(\.\d+)?x\d+(\.\d+)?$/i;
+    if (!dimensionsPattern.test(formData.dimensions.trim())) {
+      validationErrors.dimensions = "Kích thước phải theo định dạng: Dài x Rộng x Cao (VD: 20x30x40)";
+      isValid = false;
+    }
   }
   if (formData.imageUrl && formData.imageUrl.trim()) {
 

@@ -120,3 +120,26 @@ export function getProductReviews(productId, params = { page: 0, size: 5 }) {
     params: params,
   });
 }
+
+
+// export function createProductReview(productId, review) {
+//   return axios.post(`http://localhost:8080/api/productReview/add/${productId}`, review);
+//   withCredentials: true
+// }
+export function createProductReview(productId, review) {
+  const token = localStorage.getItem('token'); // hoặc từ Pinia/Vuex nếu bạn dùng
+
+  return axios.post(
+    `http://localhost:8080/api/productReview/add/${productId}`,
+    review,
+    {
+      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}
+
+
+

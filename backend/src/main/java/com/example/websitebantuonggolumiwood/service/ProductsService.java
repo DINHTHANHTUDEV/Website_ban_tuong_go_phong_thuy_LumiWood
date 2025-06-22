@@ -3,10 +3,7 @@ package com.example.websitebantuonggolumiwood.service;
 import com.example.websitebantuonggolumiwood.entity.ProductsEntity;
 import com.example.websitebantuonggolumiwood.repository.ProductsRepositories;
 import com.example.websitebantuonggolumiwood.specification.ProductSpecification;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -58,23 +55,38 @@ public class ProductsService {
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortBy);
 
-        // Lấy tất cả dữ liệu theo filter (không phân trang)
-        Specification<ProductsEntity> spec = ProductSpecification.filterBy(categories, minPrice, maxPrice, materials, keyword, null);
+        // Lấy toàn bộ sản phẩm (chưa lọc keyword)
+        Specification<ProductsEntity> spec = ProductSpecification.filterBy(categories, minPrice, maxPrice, materials);
         List<ProductsEntity> allProducts = productsRepositories.findAll(spec, sort);
 
-        // Lọc theo sizeCategory nếu cần
+        // Lọc keyword không dấu
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String keywordUnaccented = ProductSpecification.removeVietnameseAccents(keyword.toLowerCase());
+
+            allProducts = allProducts.stream()
+                    .filter(p -> {
+                        String name = ProductSpecification.removeVietnameseAccents(
+                                p.getName() != null ? p.getName().toLowerCase() : "");
+                        String desc = ProductSpecification.removeVietnameseAccents(
+                                p.getDescription() != null ? p.getDescription().toLowerCase() : "");
+                        return name.contains(keywordUnaccented) || desc.contains(keywordUnaccented);
+                    })
+                    .toList();
+        }
+
+        // Lọc theo sizeCategory nếu có
         if (sizeCategory != null && !sizeCategory.isEmpty()) {
             allProducts = allProducts.stream()
                     .filter(product -> {
                         Double volume = ProductSpecification.parseVolume(product.getDimensions());
                         if (volume == null) return false;
 
-                        switch (sizeCategory.toLowerCase()) {
-                            case "small": return volume < 1000;
-                            case "medium": return volume >= 1000 && volume < 10000;
-                            case "large": return volume >= 10000;
-                            default: return true;
-                        }
+                        return switch (sizeCategory.toLowerCase()) {
+                            case "small" -> volume < 1000;
+                            case "medium" -> volume >= 1000 && volume < 10000;
+                            case "large" -> volume >= 10000;
+                            default -> true;
+                        };
                     }).toList();
         }
 
@@ -82,17 +94,14 @@ public class ProductsService {
         int total = allProducts.size();
         int start = page * sizePerPage;
         int end = Math.min(start + sizePerPage, total);
-
-        List<ProductsEntity> content;
-        if (start <= end) {
-            content = allProducts.subList(start, end);
-        } else {
-            content = List.of(); // trang vượt quá, trả list rỗng
-        }
+        List<ProductsEntity> content = (start <= end) ? allProducts.subList(start, end) : List.of();
 
         Pageable pageable = PageRequest.of(page, sizePerPage, sort);
-        return new org.springframework.data.domain.PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, pageable, total);
     }
+
+
+
 
 
 

@@ -18,4 +18,5 @@ public class ProductReviewDTO {
     private String comment;
     private LocalDateTime createdAt;
     private String reviewerName;
+    private String slugProduct;
 }
