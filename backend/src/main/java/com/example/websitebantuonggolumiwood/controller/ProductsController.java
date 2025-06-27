@@ -42,7 +42,7 @@ public class ProductsController {
         this.categoriesService = categoriesService;
     }
 
-
+//phân trang, hien thi san pham
     @GetMapping
     public ResponseEntity<Page<ProductsEntity>> filterProducts(
             @RequestParam(required = false) List<Integer> categories,

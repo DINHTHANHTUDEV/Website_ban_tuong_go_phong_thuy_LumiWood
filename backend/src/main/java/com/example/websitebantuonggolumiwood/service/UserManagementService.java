@@ -1,17 +1,25 @@
 package com.example.websitebantuonggolumiwood.service;
 
+import com.example.websitebantuonggolumiwood.dto.AddAddressDTO;
+import com.example.websitebantuonggolumiwood.dto.OrderNoteDTO;
 import com.example.websitebantuonggolumiwood.entity.Addresses;
+import com.example.websitebantuonggolumiwood.entity.Order;
 import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.dto.AddressDTO;
 import com.example.websitebantuonggolumiwood.dto.UserListDTO;
 import com.example.websitebantuonggolumiwood.repository.AddressesRepository;
+import com.example.websitebantuonggolumiwood.repository.OrderRepository;
 import com.example.websitebantuonggolumiwood.repository.UserManagementRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +33,9 @@ public class UserManagementService {
 
     @Autowired
     private AddressesRepository addressesRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     /**
      * Lấy danh sách user với phân trang, filter theo tier, trạng thái isActive, tìm kiếm username hoặc fullName
@@ -155,4 +166,68 @@ public class UserManagementService {
 
         return true;
     }
+    /**
+     * Thêm địa chỉ giao hàng cho user
+     * @param userId ID của user
+     * @param addressDTO Thông tin địa chỉ giao hàng
+     * @return AddressDTO của địa chỉ vừa thêm
+     */
+    public AddressDTO addAddress(Long userId, AddAddressDTO addressDTO) {
+        // Kiểm tra user tồn tại
+        User user = userManagementRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user với ID: " + userId));
+
+        // Tạo địa chỉ mới
+        Addresses address = new Addresses();
+        address.setUser(user);
+        address.setRecipientName(addressDTO.getRecipientName());
+        address.setRecipientPhone(addressDTO.getRecipientPhone());
+        address.setStreetAddress(addressDTO.getStreetAddress());
+        address.setWard(addressDTO.getWard());
+        address.setDistrict(addressDTO.getDistrict());
+        address.setCity(addressDTO.getCity());
+        address.setCountry("VN"); // Set giá trị mặc định cho country
+        address.setCreatedAt(LocalDateTime.now()); // Thiết lập thời gian tạo
+        address.setUpdatedAt(LocalDateTime.now()); // Thiết lập thời gian cập nhật
+
+        // Lưu địa chỉ
+        Addresses savedAddress = addressesRepository.save(address);
+
+        // Chuyển đổi sang DTO để trả về
+        AddressDTO result = new AddressDTO();
+        result.setId(savedAddress.getId());
+        result.setRecipientName(savedAddress.getRecipientName());
+        result.setRecipientPhone(savedAddress.getRecipientPhone());
+        result.setStreetAddress(savedAddress.getStreetAddress());
+        result.setWard(savedAddress.getWard());
+        result.setDistrict(savedAddress.getDistrict());
+        result.setCity(savedAddress.getCity());
+
+        return result;
+    }
+
+    /**
+     * Đặt đơn hàng mới với ghi chú cho user.
+     * @param userId ID của user.
+     * @param orderNoteDTO Thông tin ghi chú từ request.
+     * @return OrderNoteDTO của đơn hàng vừa đặt.
+     */
+//    public OrderNoteDTO placeOrder(Long userId, OrderNoteDTO orderNoteDTO) {
+//        User user = userManagementRepository.findById(userId)
+//                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user với ID: " + userId));
+//
+//        // Tạo đơn hàng mới
+//        Order order = new Order();
+//        order.setUser(user);
+//        order.setOrderNote(orderNoteDTO.getOrderNote());
+//
+//        // Lưu đơn hàng (giả định created_at và updated_at được tự động set trong entity hoặc database)
+//        Order savedOrder = orderRepository.save(order);
+//
+//        OrderNoteDTO result = new OrderNoteDTO();
+//        result.setOrderId(savedOrder.getId());
+//        result.setOrderNote(savedOrder.getOrderNote());
+//
+//        return result;
+//    }
 }

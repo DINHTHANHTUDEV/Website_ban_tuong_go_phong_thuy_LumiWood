@@ -37,8 +37,7 @@ public class OrderHistoryController {
     @Autowired
     private OrderService orderService;
 
-    // 1. Lấy danh sách đơn hàng có phân trang
-    // 1. Lấy danh sách đơn hàng có phân trang
+    // 1. Lấy danh sách đơn hàng có phân trang, lay theo userId dang nhap tu authentication
     @GetMapping("/getOrdersHistory")
     public Page<OrderDto> getAllOrders(
             Authentication authentication,

@@ -2,7 +2,7 @@
   <div class="checkout-view container mt-4 mb-5">
     <h1 class="text-center mb-4">Thanh Toán Đơn Hàng</h1>
 
-    
+
     <div v-if="loadingInfo || loadingShipping" class="text-center my-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Đang tải thông tin...</span>
@@ -11,7 +11,7 @@
       <p v-if="loadingShipping" class="mt-2 small text-muted">Đang tải phương thức vận chuyển...</p>
     </div>
 
-    
+
     <div v-else-if="errorInfo || errorShipping" class="alert alert-danger">
       <p v-if="errorInfo">Lỗi tải thông tin tài khoản: {{ errorInfo }}</p>
       <p v-if="errorShipping" :class="{ 'mt-2': errorInfo }">
@@ -19,204 +19,132 @@
       </p>
     </div>
 
-    
+
     <form v-else @submit.prevent="handlePlaceOrder" novalidate>
       <div class="row g-4">
-        
+
         <div class="col-lg-7">
-          
+
           <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light"><h5 class="mb-0">1. Thông tin giao hàng</h5></div>
+            <div class="card-header bg-light">
+              <h5 class="mb-0">1. Thông tin giao hàng</h5>
+            </div>
             <div class="card-body">
-              
+              <!-- danh sách địa chỉ giao hàng đã lưu -->
               <div v-if="!isGuest && checkoutInfo?.savedAddresses?.length > 0">
                 <div class="mb-3">
                   <label class="form-label fw-medium">Chọn địa chỉ đã lưu:</label>
-                  <div
-                    v-for="addr in checkoutInfo.savedAddresses"
-                    :key="addr.id"
-                    class="form-check mb-2"
-                  >
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      name="shippingAddressOption"
-                      :id="'addr-' + addr.id"
-                      :value="addr.id"
-                      v-model="selectedAddressId"
-                      @change="useNewAddress = false"
-                      :disabled="placingOrder"
-                    />
+                  <div v-for="addr in checkoutInfo.savedAddresses" :key="addr.id" class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="shippingAddressOption" :id="'addr-' + addr.id"
+                      :value="addr.id" v-model="selectedAddressId" @change="useNewAddress = false"
+                      :disabled="placingOrder" />
                     <label class="form-check-label" :for="'addr-' + addr.id">
-                      <strong>{{ addr.recipientName }}</strong> - {{ addr.recipientPhone }}<br />
-                      {{ addr.streetAddress }}, {{ addr.ward ? addr.ward + ", " : ""
-                      }}{{ addr.district }}, {{ addr.city }}
-                      <span v-if="addr.isDefaultShipping" class="badge bg-secondary ms-1"
-                        >Mặc định</span
-                      >
+                      <strong>{{ addr.recipientName }}</strong> -
+                      <span v-if="addr.recipientPhone">{{ addr.recipientPhone }}</span>
+                      <span v-else class="text-muted">(Số điện thoại không có)</span><br />
+                      {{ addr.streetAddress }},
+                      {{ addr.ward ? addr.ward + ", " : "" }}{{ addr.district }}, {{ addr.city }}
+                      <span v-if="addr.isDefaultShipping" class="badge bg-secondary ms-1">Mặc định</span>
                     </label>
                   </div>
                 </div>
                 <div class="mb-3">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    @click="toggleNewAddress"
-                    :disabled="placingOrder"
-                  >
+                  <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleNewAddress"
+                    :disabled="placingOrder">
                     {{ useNewAddress ? "Sử dụng địa chỉ đã lưu" : "Hoặc nhập địa chỉ mới" }}
                   </button>
                 </div>
               </div>
 
-              
-              <div
-                v-if="
-                  isGuest || useNewAddress || (!isGuest && !checkoutInfo?.savedAddresses?.length)
-                "
-              >
+              <!-- thêm địa chỉ giao hàng mới -->
+              <div v-if="
+                isGuest || useNewAddress || (!isGuest && !checkoutInfo?.savedAddresses?.length)
+              ">
                 <h6 v-if="!isGuest && checkoutInfo?.savedAddresses?.length > 0" class="mb-3">
                   Nhập địa chỉ mới:
                 </h6>
                 <div class="row g-3">
                   <div class="col-md-6">
-                    <label for="recipientName" class="form-label"
-                      >Họ tên người nhận <span class="text-danger">*</span></label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.recipientName }"
-                      id="recipientName"
-                      v-model.trim="shippingAddressInput.recipientName"
-                      required
-                      :disabled="placingOrder"
-                    />
+                    <label for="recipientName" class="form-label">Họ tên người nhận <span
+                        class="text-danger">*</span></label>
+                    <input type="text" class="form-control" :class="{ 'is-invalid': validationErrors.recipientName }"
+                      id="recipientName" v-model.trim="shippingAddressInput.recipientName" required
+                      :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.recipientName }}</div>
                   </div>
                   <div class="col-md-6">
-                    <label for="recipientPhone" class="form-label"
-                      >Số điện thoại <span class="text-danger">*</span></label
-                    >
-                    <input
-                      type="tel"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.recipientPhone }"
-                      id="recipientPhone"
-                      v-model.trim="shippingAddressInput.recipientPhone"
-                      required
-                      :disabled="placingOrder"
-                    />
+                    <label for="recipientPhone" class="form-label">Số điện thoại <span
+                        class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" :class="{ 'is-invalid': validationErrors.recipientPhone }"
+                      id="recipientPhone" v-model.trim="shippingAddressInput.recipientPhone" required
+                      :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.recipientPhone }}</div>
                   </div>
-                  
+
                   <div class="col-12" v-if="isGuest">
-                    <label for="recipientEmail" class="form-label"
-                      >Email <span class="text-danger">*</span></label
-                    >
-                    <input
-                      type="email"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.recipientEmail }"
-                      id="recipientEmail"
-                      v-model.trim="shippingAddressInput.recipientEmail"
-                      required
-                      :disabled="placingOrder"
-                    />
+                    <label for="recipientEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" :class="{ 'is-invalid': validationErrors.recipientEmail }"
+                      id="recipientEmail" v-model.trim="shippingAddressInput.recipientEmail" required
+                      :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.recipientEmail }}</div>
                   </div>
                   <div class="col-12">
-                    <label for="streetAddress" class="form-label"
-                      >Địa chỉ cụ thể (Số nhà, tên đường) <span class="text-danger">*</span></label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.streetAddress }"
-                      id="streetAddress"
-                      v-model.trim="shippingAddressInput.streetAddress"
-                      required
-                      :disabled="placingOrder"
-                    />
+                    <label for="streetAddress" class="form-label">Địa chỉ cụ thể (Số nhà, tên đường) <span
+                        class="text-danger">*</span></label>
+                    <input type="text" class="form-control" :class="{ 'is-invalid': validationErrors.streetAddress }"
+                      id="streetAddress" v-model.trim="shippingAddressInput.streetAddress" required
+                      :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.streetAddress }}</div>
                   </div>
                   <div class="col-md-4">
-                    <label for="city" class="form-label"
-                      >Tỉnh/Thành phố <span class="text-danger">*</span></label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.city }"
-                      id="city"
-                      v-model.trim="shippingAddressInput.city"
-                      required
-                      :disabled="placingOrder"
-                    />
+                    <label for="city" class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" :class="{ 'is-invalid': validationErrors.city }" id="city"
+                      v-model.trim="shippingAddressInput.city" required :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.city }}</div>
                   </div>
                   <div class="col-md-4">
-                    <label for="district" class="form-label"
-                      >Quận/Huyện <span class="text-danger">*</span></label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.district }"
-                      id="district"
-                      v-model.trim="shippingAddressInput.district"
-                      required
-                      :disabled="placingOrder"
-                    />
+                    <label for="district" class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" :class="{ 'is-invalid': validationErrors.district }"
+                      id="district" v-model.trim="shippingAddressInput.district" required :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.district }}</div>
                   </div>
                   <div class="col-md-4">
                     <label for="ward" class="form-label">Phường/Xã</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': validationErrors.ward }"
-                      id="ward"
-                      v-model.trim="shippingAddressInput.ward"
-                      :disabled="placingOrder"
-                    />
+                    <input type="text" class="form-control" :class="{ 'is-invalid': validationErrors.ward }" id="ward"
+                      v-model.trim="shippingAddressInput.ward" :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.ward }}</div>
                   </div>
                 </div>
-              </div>
-              <div v-if="validationErrors.addressSelection" class="text-danger small mt-2">
-                {{ validationErrors.addressSelection }}
+                <div class="mt-3">
+                  <button type="button" class="btn btn-primary" @click="handleAddAddress" :disabled="placingOrder">
+                    Lưu địa chỉ mới
+                  </button>
+                </div>
+                <div v-if="errorInfo" class="text-danger small mt-2">
+                  {{ errorInfo }} <!-- Hiển thị lỗi nếu có khi thêm địa chỉ -->
+                </div>
+                <div v-if="validationErrors.addressSelection" class="text-danger small mt-2">
+                  {{ validationErrors.addressSelection }}
+                </div>
               </div>
             </div>
           </div>
 
-          
+          <!-- phương  thức vận chuyển -->
           <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light"><h5 class="mb-0">2. Phương thức vận chuyển</h5></div>
+            <div class="card-header bg-light">
+              <h5 class="mb-0">2. Phương thức vận chuyển</h5>
+            </div>
             <div class="card-body">
-              
-              <div
-                v-if="!availableShippingMethods || availableShippingMethods.length === 0"
-                class="alert alert-warning small"
-              >
+
+              <div v-if="!availableShippingMethods || availableShippingMethods.length === 0"
+                class="alert alert-warning small">
                 Không có phương thức vận chuyển nào khả dụng.
               </div>
               <div v-else>
-                <div
-                  v-for="method in availableShippingMethods"
-                  :key="method.id"
-                  class="form-check mb-2"
-                >
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="shippingMethod"
-                    :id="'ship-' + method.id"
-                    :value="method.id"
-                    v-model="selectedShippingMethodId"
-                    required
-                    :disabled="placingOrder"
-                  />
+                <div v-for="method in availableShippingMethods" :key="method.id" class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="shippingMethod" :id="'ship-' + method.id"
+                    :value="method.id" v-model="selectedShippingMethodId" required :disabled="placingOrder" />
                   <label class="form-check-label w-100" :for="'ship-' + method.id">
                     <div class="d-flex justify-content-between">
                       <div>
@@ -224,9 +152,8 @@
                         <small v-if="method.description" class="d-block text-muted">{{
                           method.description
                         }}</small>
-                        <small v-if="method.estimatedDelivery" class="d-block text-muted"
-                          >Dự kiến: {{ method.estimatedDelivery }}</small
-                        >
+                        <small v-if="method.estimatedDelivery" class="d-block text-muted">Dự kiến: {{
+                          method.estimatedDelivery }}</small>
                       </div>
                       <span class="fw-medium ms-2">{{ formatCurrency(method.baseCost) }}</span>
                     </div>
@@ -239,43 +166,24 @@
             </div>
           </div>
 
-          
+          <!-- phương thức thanh toán -->
           <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light"><h5 class="mb-0">3. Phương thức thanh toán</h5></div>
+            <div class="card-header bg-light">
+              <h5 class="mb-0">3. Phương thức thanh toán</h5>
+            </div>
             <div class="card-body">
               <div class="form-check mb-2">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="paymentMethod"
-                  id="payment-cod"
-                  value="COD"
-                  v-model="selectedPaymentMethod"
-                  required
-                  :disabled="placingOrder"
-                />
-                <label class="form-check-label" for="payment-cod"
-                  ><i class="bi bi-cash-coin me-1"></i> Thanh toán khi nhận hàng (COD)</label
-                >
+                <input class="form-check-input" type="radio" name="paymentMethod" id="payment-cod" value="COD"
+                  v-model="selectedPaymentMethod" required :disabled="placingOrder" />
+                <label class="form-check-label" for="payment-cod"><i class="bi bi-cash-coin me-1"></i> Thanh toán khi
+                  nhận hàng (COD)</label>
               </div>
               <div class="form-check mb-2">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="paymentMethod"
-                  id="payment-bank"
-                  value="BANK_TRANSFER"
-                  v-model="selectedPaymentMethod"
-                  required
-                  :disabled="placingOrder"
-                />
-                <label class="form-check-label" for="payment-bank"
-                  ><i class="bi bi-bank me-1"></i> Chuyển khoản ngân hàng</label
-                >
-                <div
-                  v-if="selectedPaymentMethod === 'BANK_TRANSFER'"
-                  class="alert alert-info small p-2 mt-2"
-                >
+                <input class="form-check-input" type="radio" name="paymentMethod" id="payment-bank"
+                  value="BANK_TRANSFER" v-model="selectedPaymentMethod" required :disabled="placingOrder" />
+                <label class="form-check-label" for="payment-bank"><i class="bi bi-bank me-1"></i> Chuyển khoản ngân
+                  hàng</label>
+                <div v-if="selectedPaymentMethod === 'BANK_TRANSFER'" class="alert alert-info small p-2 mt-2">
                   <strong>Thông tin chuyển khoản:</strong><br />
                   Ngân hàng: ABC Bank<br />
                   Số TK: 1234567890<br />
@@ -284,19 +192,10 @@
                 </div>
               </div>
               <div class="form-check mb-2">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="paymentMethod"
-                  id="payment-vnpay"
-                  value="VNPAY"
-                  v-model="selectedPaymentMethod"
-                  required
-                  :disabled="placingOrder"
-                />
-                <label class="form-check-label" for="payment-vnpay"
-                  ><i class="bi bi-credit-card me-1"></i> Thanh toán qua VNPAY</label
-                >
+                <input class="form-check-input" type="radio" name="paymentMethod" id="payment-vnpay" value="VNPAY"
+                  v-model="selectedPaymentMethod" required :disabled="placingOrder" />
+                <label class="form-check-label" for="payment-vnpay"><i class="bi bi-credit-card me-1"></i> Thanh toán
+                  qua VNPAY</label>
               </div>
               <div v-if="validationErrors.paymentMethod" class="text-danger small mt-1">
                 {{ validationErrors.paymentMethod }}
@@ -304,55 +203,39 @@
             </div>
           </div>
 
-          
+          <!-- ghi chú đơn hàng -->
           <div class="card shadow-sm">
             <div class="card-header bg-light">
               <h5 class="mb-0">4. Ghi chú đơn hàng (tùy chọn)</h5>
             </div>
             <div class="card-body">
-              <textarea
-                class="form-control"
-                id="orderNote"
-                rows="3"
-                v-model="orderNote"
-                placeholder="Thêm ghi chú cho người bán..."
-                :disabled="placingOrder"
-              ></textarea>
+              <textarea class="form-control" id="orderNote" rows="3" v-model="orderNote"
+                placeholder="Thêm ghi chú cho người bán..." :disabled="placingOrder"></textarea>
             </div>
           </div>
         </div>
 
-        
+        <!-- tóm tắt đơn hàng, các sản phẩm trong giỏ hàng, tổng tiền, phí vận chuyển, mã giảm giá -->
         <div class="col-lg-5">
           <div class="card shadow-sm sticky-top" style="top: 80px">
             <div class="card-header bg-primary text-white">
               <h5 class="mb-0">Tóm tắt đơn hàng</h5>
             </div>
             <div class="card-body">
-              
+
               <ul class="list-unstyled mb-3 small">
-                <li
-                  v-for="item in cartStore.items"
-                  :key="item.productId"
-                  class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1"
-                >
+                <li v-for="item in cartStore.items" :key="item.productId"
+                  class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
                   <div class="d-flex align-items-center">
-                    <img
-                      :src="item.imageUrl || defaultImage"
-                      :alt="item.productName"
-                      width="40"
-                      class="me-2 rounded"
-                    />
-                    <span
-                      >{{ item.productName }}
-                      <span class="text-muted">x {{ item.quantity }}</span></span
-                    >
+                    <img :src="item.imageUrl || defaultImage" :alt="item.productName" width="40" class="me-2 rounded" />
+                    <span>{{ item.productName }}
+                      <span class="text-muted">x {{ item.quantity }}</span></span>
                   </div>
                   <span class="fw-medium">{{ formatCurrency(item.price * item.quantity) }}</span>
                 </li>
               </ul>
               <hr />
-              
+
               <ul class="list-group list-group-flush mb-3">
                 <li class="list-group-item d-flex justify-content-between px-0">
                   <span>Tạm tính:</span>
@@ -363,49 +246,36 @@
                   <span v-if="selectedShippingMethod">{{ formatCurrency(shippingCost) }}</span>
                   <span v-else class="text-muted">Chọn PTVC</span>
                 </li>
-                <li
-                  v-if="appliedPromotionSummary"
-                  class="list-group-item d-flex justify-content-between px-0 text-success"
-                >
+                <li v-if="appliedPromotionSummary"
+                  class="list-group-item d-flex justify-content-between px-0 text-success">
                   <span>Giảm giá ({{ appliedPromotionSummary.code }}):</span>
                   <span>- {{ formatCurrency(discountAmount) }}</span>
                 </li>
-                <li
-                  class="list-group-item d-flex justify-content-between px-0 fw-bold fs-5 border-top pt-2"
-                >
+                <li class="list-group-item d-flex justify-content-between px-0 fw-bold fs-5 border-top pt-2">
                   <span>Tổng cộng:</span>
                   <span>{{ formatCurrency(finalTotal) }}</span>
                 </li>
               </ul>
 
-              
+
               <div v-if="errorPlaceOrder" class="alert alert-danger">
                 {{ errorPlaceOrder }}
               </div>
 
-              
+
               <div class="d-grid gap-2 mt-4">
-                <button
-                  type="submit"
-                  class="btn btn-danger btn-lg"
-                  :disabled="
-                    placingOrder ||
-                    cartStore.items.length === 0 ||
-                    loadingInfo ||
-                    loadingShipping ||
-                    !availableShippingMethods ||
-                    availableShippingMethods.length === 0
-                  "
-                >
-                  <span
-                    v-if="placingOrder"
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
+                <button type="submit" class="btn btn-danger btn-lg" :disabled="placingOrder ||
+                  cartStore.items.length === 0 ||
+                  loadingInfo ||
+                  loadingShipping ||
+                  !availableShippingMethods ||
+                  availableShippingMethods.length === 0
+                  ">
+                  <span v-if="placingOrder" class="spinner-border spinner-border-sm me-2" role="status"
+                    aria-hidden="true"></span>
                   {{ placingOrder ? "Đang xử lý..." : "Đặt Hàng Ngay" }}
                 </button>
-                
+
                 <router-link :to="{ name: 'shoppingCart' }" class="btn btn-outline-secondary">
                   <i class="bi bi-arrow-left-short"></i> Quay lại Giỏ hàng
                 </router-link>
@@ -413,14 +283,11 @@
                 <p v-if="cartStore.items.length === 0" class="text-danger small text-center mt-2">
                   Giỏ hàng trống, không thể đặt hàng.
                 </p>
-                <p
-                  v-if="
-                    availableShippingMethods &&
-                    availableShippingMethods.length === 0 &&
-                    !loadingShipping
-                  "
-                  class="text-danger small text-center mt-2"
-                >
+                <p v-if="
+                  availableShippingMethods &&
+                  availableShippingMethods.length === 0 &&
+                  !loadingShipping
+                " class="text-danger small text-center mt-2">
                   Không có PTVC, không thể đặt hàng.
                 </p>
               </div>
@@ -434,160 +301,212 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
+// Import các hook và tính năng từ Vue để quản lý trạng thái và vòng đời component
 import { useRouter } from "vue-router";
+// Import useRouter để điều hướng giữa các trang
 import { useAuthStore } from "@/store/auth.js";
+// Import store để kiểm tra trạng thái đăng nhập của user
 import { useCartStore } from "@/store/cart.js";
-import { getCheckoutInfo, placeOrder } from "@/http/modules/public/checkoutService.js";
+// Import store để quản lý giỏ hàng
+import { getCheckoutInfo, placeOrder, addAddress } from "@/http/modules/public/checkoutService.js";
+// Import các hàm API liên quan đến thông tin thanh toán và đặt hàng
 import { getActiveShippingMethods } from "@/http/modules/public/shippingService.js";
+// Import hàm API để lấy danh sách phương thức vận chuyển
 import defaultImage from "@/assets/images/placeholder.png";
+// Import hình ảnh mặc định để sử dụng nếu cần
 
 const router = useRouter();
+// Khởi tạo router để điều hướng trang
 const authStore = useAuthStore();
+// Khởi tạo store xác thực để kiểm tra trạng thái đăng nhập
 const cartStore = useCartStore();
+// Khởi tạo store giỏ hàng để lấy thông tin giỏ hàng
 
-
+// Khai báo các biến phản ứng để lưu trữ trạng thái
 const checkoutInfo = ref(null);
+// Lưu thông tin checkout (địa chỉ, phương thức vận chuyển, v.v.) từ API
 const shippingMethods = ref([]);
+// Lưu danh sách phương thức vận chuyển khả dụng
 const loadingInfo = ref(false);
+// Trạng thái tải thông tin checkout (true khi đang tải, false khi hoàn tất)
 const errorInfo = ref(null);
+// Lưu thông báo lỗi nếu có khi tải thông tin checkout
 const loadingShipping = ref(false);
+// Trạng thái tải danh sách phương thức vận chuyển
 const errorShipping = ref(null);
+// Lưu thông báo lỗi nếu có khi tải phương thức vận chuyển
 
-
+// Biến điều khiển liên quan đến địa chỉ giao hàng
 const selectedAddressId = ref(null);
+// Lưu ID của địa chỉ được chọn từ danh sách địa chỉ đã lưu
 const useNewAddress = ref(false);
+// Cờ xác định xem user đang dùng địa chỉ mới hay địa chỉ đã lưu
 const shippingAddressInput = reactive({
+  // Đối tượng phản ứng để nhập thông tin địa chỉ mới
   recipientName: "",
+  // Tên người nhận
   recipientPhone: "",
+  // Số điện thoại người nhận
   recipientEmail: "",
+  // Email người nhận (chỉ áp dụng cho khách lẻ)
   streetAddress: "",
+  // Địa chỉ cụ thể (số nhà, tên đường)
   ward: "",
+  // Phường/Xã
   district: "",
+  // Quận/Huyện
   city: "",
+  // Tỉnh/Thành phố
 });
 const selectedShippingMethodId = ref(null);
+// Lưu ID của phương thức vận chuyển được chọn
 const selectedPaymentMethod = ref("COD");
+// Phương thức thanh toán mặc định (COD = Thanh toán khi nhận hàng)
 const orderNote = ref("");
-
+// Ghi chú cho đơn hàng (nếu có)
 
 const placingOrder = ref(false);
+// Trạng thái đặt hàng (true khi đang xử lý, false khi hoàn tất)
 const errorPlaceOrder = ref(null);
+// Lưu thông báo lỗi nếu có khi đặt hàng
 const validationErrors = reactive({});
+// Đối tượng phản ứng để lưu các lỗi xác thực form
 const appliedPromotionSummary = ref(null);
-
+// Lưu thông tin khuyến mãi áp dụng (nếu có)
 
 const isGuest = computed(() => !authStore.isAuthenticated);
-
+// Tính toán xem user có phải là khách lẻ không (true nếu chưa đăng nhập)
 
 const availableShippingMethods = computed(() => {
-
+  // Tính toán danh sách phương thức vận chuyển khả dụng
   if (!isGuest.value && checkoutInfo.value?.availableShippingMethods) {
+    // Nếu user đã đăng nhập và checkoutInfo có phương thức vận chuyển, sử dụng từ checkoutInfo
     return checkoutInfo.value.availableShippingMethods;
   }
-
+  // Ngược lại, sử dụng danh sách từ shippingMethods
   return shippingMethods.value;
 });
 
 const selectedShippingMethod = computed(() => {
+  // Tính toán phương thức vận chuyển được chọn
   if (!selectedShippingMethodId.value || !availableShippingMethods.value) return null;
+  // Tìm phương thức vận chuyển tương ứng với ID đã chọn
   return availableShippingMethods.value.find((m) => m.id === selectedShippingMethodId.value);
 });
 
 const shippingCost = computed(() => selectedShippingMethod.value?.baseCost || 0);
+// Tính toán chi phí vận chuyển (lấy từ phương thức được chọn, mặc định 0 nếu không có)
 
 const discountAmount = computed(() => appliedPromotionSummary.value?.discount || 0);
+// Tính toán số tiền giảm giá (lấy từ khuyến mãi, mặc định 0 nếu không có)
 
 const finalTotal = computed(() => {
+  // Tính toán tổng tiền cuối cùng
   const total = cartStore.subtotal + shippingCost.value - discountAmount.value;
-  return total > 0 ? total : 0;
+  return total > 0 ? total : 0; // Đảm bảo tổng không âm
 });
 
-
-
-
 const fetchShippingMethods = async () => {
-  loadingShipping.value = true;
-  errorShipping.value = null;
+  // Hàm lấy danh sách phương thức vận chuyển từ API
+  loadingShipping.value = true; // Bắt đầu tải
+  errorShipping.value = null; // Xóa lỗi cũ
   try {
-    const response = await getActiveShippingMethods();
-    shippingMethods.value = response.data || [];
+    const response = await getActiveShippingMethods(); // Gọi API
+    console.log("Response:", response.data); // Kiểm tra cấu trúc dữ liệu
+    shippingMethods.value = response.data || []; // Cập nhật danh sách phương thức
 
     if (
       shippingMethods.value.length > 0 &&
       (!selectedShippingMethodId.value ||
         !shippingMethods.value.some((m) => m.id === selectedShippingMethodId.value))
     ) {
+      // Nếu có phương thức và chưa chọn hoặc không hợp lệ, chọn phương thức đầu tiên
       selectedShippingMethodId.value = shippingMethods.value[0].id;
     } else if (shippingMethods.value.length === 0) {
+      // Nếu không có phương thức, xóa chọn
       selectedShippingMethodId.value = null;
     }
   } catch (err) {
+    // Xử lý lỗi khi gọi API
     console.error("Error fetching shipping methods:", err);
     errorShipping.value = "Lỗi tải phương thức vận chuyển.";
     shippingMethods.value = [];
     selectedShippingMethodId.value = null;
   } finally {
+    // Kết thúc tải
     loadingShipping.value = false;
   }
 };
 
-
 const fetchCheckoutInfoForUser = async () => {
-  if (isGuest.value) return;
-  loadingInfo.value = true;
-  errorInfo.value = null;
+  // Hàm lấy thông tin checkout cho user đã đăng nhập
+  if (isGuest.value) return; // Thoát nếu là khách lẻ
+  loadingInfo.value = true; // Bắt đầu tải
+  errorInfo.value = null; // Xóa lỗi cũ
   try {
-    const response = await getCheckoutInfo();
-    checkoutInfo.value = response.data;
+    const response = await getCheckoutInfo(); // Gọi API lấy thông tin
+    console.log("API Response for checkout info:", response); // Log để debug
 
+    // Cập nhật thông tin địa chỉ từ response
+    checkoutInfo.value = checkoutInfo.value || {}; // Đảm bảo checkoutInfo là object
+    checkoutInfo.value.savedAddresses = response.savedAddresses || []; // Lấy danh sách địa chỉ từ API
+    checkoutInfo.value.defaultShippingAddress = response.defaultShippingAddress || null; // Lấy địa chỉ mặc định
 
-    if (response.data?.availableShippingMethods) {
-      shippingMethods.value = response.data.availableShippingMethods;
-    }
-
-
-    if (checkoutInfo.value?.defaultShippingAddress) {
+    // Chọn địa chỉ mặc định hoặc địa chỉ đầu tiên nếu có
+    if (checkoutInfo.value.defaultShippingAddress) {
       selectedAddressId.value = checkoutInfo.value.defaultShippingAddress.id;
       useNewAddress.value = false;
-    } else if (checkoutInfo.value?.savedAddresses?.length > 0) {
+    } else if (checkoutInfo.value.savedAddresses.length > 0) {
       selectedAddressId.value = checkoutInfo.value.savedAddresses[0].id;
       useNewAddress.value = false;
     } else {
       useNewAddress.value = true;
     }
 
+    // Giữ nguyên phần phương thức vận chuyển (vì đã chạy tốt)
+    if (response.data?.availableShippingMethods) {
+      // Nếu API trả về phương thức vận chuyển, cập nhật
+      shippingMethods.value = response.data.availableShippingMethods;
+    }
 
     if (
       shippingMethods.value.length > 0 &&
       (!selectedShippingMethodId.value ||
         !shippingMethods.value.some((m) => m.id === selectedShippingMethodId.value))
     ) {
+      // Nếu có phương thức và chưa chọn hoặc không hợp lệ, chọn phương thức đầu tiên
       selectedShippingMethodId.value = shippingMethods.value[0].id;
     } else if (shippingMethods.value.length === 0) {
+      // Nếu không có phương thức, xóa chọn
       selectedShippingMethodId.value = null;
     }
   } catch (err) {
+    // Xử lý lỗi khi gọi API
     console.error("Error fetching checkout info:", err);
     errorInfo.value = "Không thể tải thông tin thanh toán tài khoản.";
-
     if (shippingMethods.value.length === 0) {
+      // Nếu không có phương thức, gọi lại fetchShippingMethods
       await fetchShippingMethods();
     }
   } finally {
+    // Kết thúc tải
     loadingInfo.value = false;
   }
 };
 
 const toggleNewAddress = () => {
+  // Chuyển đổi giữa dùng địa chỉ đã lưu và địa chỉ mới
   useNewAddress.value = !useNewAddress.value;
   if (!useNewAddress.value && checkoutInfo.value?.savedAddresses?.length > 0) {
-
+    // Nếu dùng địa chỉ đã lưu và có danh sách, chọn địa chỉ mặc định hoặc đầu tiên
     selectedAddressId.value =
       checkoutInfo.value.defaultShippingAddress?.id || checkoutInfo.value.savedAddresses[0].id;
   } else {
+    // Nếu dùng địa chỉ mới, xóa chọn
     selectedAddressId.value = null;
   }
 
+  // Xóa các lỗi xác thực liên quan đến địa chỉ
   delete validationErrors.addressSelection;
   delete validationErrors.recipientName;
   delete validationErrors.recipientPhone;
@@ -598,15 +517,60 @@ const toggleNewAddress = () => {
   delete validationErrors.ward;
 };
 
+// Hàm xử lý thêm địa chỉ mới
+const handleAddAddress = async () => {
+  // Hàm xử lý thêm địa chỉ mới
+  placingOrder.value = true; // Bắt đầu xử lý, vô hiệu hóa form
+  errorInfo.value = null; // Xóa lỗi cũ
+
+  try {
+    // Chuẩn bị dữ liệu từ form
+    const addressData = {
+      recipientName: shippingAddressInput.recipientName,
+      recipientPhone: shippingAddressInput.recipientPhone,
+      recipientEmail: isGuest.value ? shippingAddressInput.recipientEmail : undefined, // Chỉ gửi email nếu là khách
+      streetAddress: shippingAddressInput.streetAddress,
+      city: shippingAddressInput.city,
+      district: shippingAddressInput.district,
+      ward: shippingAddressInput.ward || '', // Phường/Xã có thể rỗng
+      isDefaultShipping: !checkoutInfo.value?.defaultShippingAddress, // Đặt làm mặc định nếu chưa có địa chỉ mặc định
+    };
+
+    // Gọi API để thêm địa chỉ
+    const newAddress = await addAddress(addressData);
+    console.log('New address added:', newAddress);
+
+    // Cập nhật checkoutInfo với địa chỉ mới
+    if (!checkoutInfo.value) checkoutInfo.value = {};
+    if (!checkoutInfo.value.savedAddresses) checkoutInfo.value.savedAddresses = [];
+    checkoutInfo.value.savedAddresses.push(newAddress); // Thêm địa chỉ mới vào danh sách
+    if (!checkoutInfo.value.defaultShippingAddress) {
+      checkoutInfo.value.defaultShippingAddress = newAddress; // Đặt làm mặc định nếu chưa có
+    }
+    useNewAddress.value = false; // Chuyển về dùng địa chỉ đã lưu
+    selectedAddressId.value = newAddress.id; // Chọn địa chỉ vừa thêm (nếu API trả về id)
+
+    // Xóa form sau khi thêm thành công
+    Object.keys(shippingAddressInput).forEach(key => (shippingAddressInput[key] = ''));
+  } catch (err) {
+    console.error('Failed to add address:', err);
+    errorInfo.value = 'Không thể thêm địa chỉ. Vui lòng thử lại.';
+  } finally {
+    placingOrder.value = false; // Kết thúc xử lý
+  }
+};
+
 const formatCurrency = (value) => {
+  // Định dạng giá tiền theo kiểu tiền tệ Việt Nam (VND)
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value || 0);
 };
 
 const validateClientForm = () => {
-  Object.keys(validationErrors).forEach((key) => delete validationErrors[key]);
+  // Hàm kiểm tra tính hợp lệ của form
+  Object.keys(validationErrors).forEach((key) => delete validationErrors[key]); // Xóa lỗi cũ
   let isValid = true;
 
-
+  // Kiểm tra địa chỉ nếu không phải khách lẻ và không dùng địa chỉ mới
   if (!isGuest.value && !selectedAddressId.value && !useNewAddress.value) {
     validationErrors.addressSelection = "Vui lòng chọn hoặc nhập địa chỉ giao hàng.";
     isValid = false;
@@ -646,36 +610,34 @@ const validateClientForm = () => {
       validationErrors.city = "Vui lòng nhập Tỉnh/Thành phố.";
       isValid = false;
     }
-
   }
-
 
   if (!selectedShippingMethodId.value) {
     validationErrors.shippingMethodId = "Vui lòng chọn phương thức vận chuyển.";
     isValid = false;
   }
 
-
   if (!selectedPaymentMethod.value) {
     validationErrors.paymentMethod = "Vui lòng chọn phương thức thanh toán.";
     isValid = false;
   }
 
-  return isValid;
+  return isValid; // Trả về kết quả xác thực
 };
 
 const handlePlaceOrder = async () => {
-  errorPlaceOrder.value = null;
+  // Hàm xử lý đặt hàng
+  errorPlaceOrder.value = null; // Xóa lỗi cũ
   if (!validateClientForm()) {
-
+    // Kiểm tra form, nếu không hợp lệ thì dừng
     const firstError = document.querySelector(".is-invalid, .text-danger.small");
     firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 
-  placingOrder.value = true;
+  placingOrder.value = true; // Bắt đầu xử lý đặt hàng
 
-
+  // Chuẩn bị payload để gửi đến API
   const orderPayload = {
     selectedShippingAddressId:
       !isGuest.value && !useNewAddress.value ? selectedAddressId.value : null,
@@ -686,8 +648,8 @@ const handlePlaceOrder = async () => {
     orderNote: orderNote.value || null,
   };
 
-
   if (!isGuest.value && orderPayload.shippingAddressInput) {
+    // Xóa email nếu không phải khách lẻ
     delete orderPayload.shippingAddressInput.recipientEmail;
   }
   if (
@@ -695,6 +657,7 @@ const handlePlaceOrder = async () => {
     orderPayload.shippingAddressInput &&
     !orderPayload.shippingAddressInput.recipientEmail
   ) {
+    // Kiểm tra email cho khách lẻ
     console.error("Guest email missing in payload!");
     errorPlaceOrder.value = "Lỗi: Email khách hàng bị thiếu.";
     placingOrder.value = false;
@@ -704,70 +667,64 @@ const handlePlaceOrder = async () => {
   console.log("Placing order with payload:", JSON.stringify(orderPayload, null, 2));
 
   try {
-    const response = await placeOrder(orderPayload);
+    const response = await placeOrder(orderPayload); // Gọi API đặt hàng
     const orderSummary = response.data;
     console.log("Order placed successfully:", orderSummary);
 
-
-    cartStore.clearClientCart();
-
-
-    sessionStorage.removeItem("appliedPromo");
-
+    cartStore.clearClientCart(); // Xóa giỏ hàng sau khi đặt thành công
+    sessionStorage.removeItem("appliedPromo"); // Xóa khuyến mãi đã áp dụng
 
     if (orderSummary.paymentUrl) {
-
+      // Nếu có URL thanh toán, chuyển hướng
       window.location.href = orderSummary.paymentUrl;
     } else {
-
+      // Nếu không, chuyển đến trang thành công
       router.push({ name: "orderSuccess", params: { orderId: orderSummary.orderId } });
     }
   } catch (err) {
+    // Xử lý lỗi khi đặt hàng
     console.error("Error placing order:", err);
     placingOrder.value = false;
     if (err.response?.data?.message) {
       errorPlaceOrder.value = err.response.data.message;
     } else if (err.response?.status === 400) {
-
       errorPlaceOrder.value =
         "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại giỏ hàng hoặc thông tin nhập.";
     } else {
       errorPlaceOrder.value = "Đã có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.";
     }
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Cuộn lên đầu trang để hiển thị lỗi
   }
-
 };
 
-
 onMounted(async () => {
-
+  // Hàm chạy khi component được mount (tải lần đầu)
   if (cartStore.items.length === 0) {
+    // Nếu giỏ hàng rỗng, chuyển hướng về trang giỏ hàng
     console.warn("Checkout page loaded with empty cart. Redirecting...");
     router.replace({ name: "shoppingCart" });
     return;
   }
 
-
   try {
+    // Lấy thông tin khuyến mãi từ sessionStorage
     const savedPromo = sessionStorage.getItem("appliedPromo");
     if (savedPromo) {
       appliedPromotionSummary.value = JSON.parse(savedPromo);
       console.log("Loaded applied promo:", appliedPromotionSummary.value);
     }
   } catch (e) {
+    // Xử lý lỗi khi parse dữ liệu khuyến mãi
     console.error("Could not parse promo from sessionStorage:", e);
     sessionStorage.removeItem("appliedPromo");
   }
 
-
   if (isGuest.value) {
+    // Nếu là khách lẻ, yêu cầu nhập địa chỉ mới và tải phương thức vận chuyển
     useNewAddress.value = true;
     await fetchShippingMethods();
   } else {
-
-
+    // Nếu đã đăng nhập, tải cả thông tin checkout và phương thức vận chuyển
     await Promise.all([
       fetchCheckoutInfoForUser(),
       fetchShippingMethods(),
@@ -778,12 +735,11 @@ onMounted(async () => {
 
 <style scoped>
 .checkout-view {
-  min-height: 80vh; 
+  min-height: 80vh;
 }
+
 .sticky-top {
-  
+
   top: 80px;
 }
-
 </style>
-
