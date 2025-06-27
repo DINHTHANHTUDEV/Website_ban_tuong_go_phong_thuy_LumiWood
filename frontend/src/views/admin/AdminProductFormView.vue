@@ -413,7 +413,7 @@ const validateForm = () => {
   ) {
     validationErrors.stock = "Tồn kho phải là số nguyên không âm.";
     isValid = false;
-  }
+  }// them validate
   if (formData.dimensions.trim()) {
     const dimensionsPattern = /^\d+(\.\d+)?x\d+(\.\d+)?x\d+(\.\d+)?$/i;
     if (!dimensionsPattern.test(formData.dimensions.trim())) {
