@@ -4,7 +4,10 @@ import com.example.websitebantuonggolumiwood.dto.CartItemDTO;
 import com.example.websitebantuonggolumiwood.dto.CartDTO;
 import com.example.websitebantuonggolumiwood.dto.MergeCartDTO;
 import com.example.websitebantuonggolumiwood.entity.Cart;
+import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
+import com.example.websitebantuonggolumiwood.repository.PromotionRepository;
 import com.example.websitebantuonggolumiwood.service.CartService;
+import com.example.websitebantuonggolumiwood.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,11 +21,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/cart")
 @CrossOrigin(origins = "http://localhost:5173")
 public class CartController {
     @Autowired private CartService cartService;
+    @Autowired
+    private PromotionRepository promotionRepository;
+    @Autowired
+    private ProductsService productsService;
 
     @GetMapping
     public ResponseEntity<CartDTO> viewCart(
@@ -69,5 +78,6 @@ public class CartController {
             @RequestBody MergeCartDTO request) {
         return ResponseEntity.ok(cartService.mergeGuestCart(userId, request.getSessionId()));
     }
+
 
 }

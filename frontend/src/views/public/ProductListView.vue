@@ -342,7 +342,7 @@ const fetchData = async () => {
     ...(currentFilters.value.minPrice !== null && { minPrice: currentFilters.value.minPrice }),
     ...(currentFilters.value.maxPrice !== null && { maxPrice: currentFilters.value.maxPrice }),
     ...(currentFilters.value.material && { materials: currentFilters.value.material }),
-    ...(currentFilters.value.size && { size: currentFilters.value.size }),
+    ...(currentFilters.value.size && { sizeCategory: currentFilters.value.size }),
 
   };
 

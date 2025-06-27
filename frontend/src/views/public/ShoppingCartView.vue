@@ -190,14 +190,17 @@
               <div class="mb-3">
                 <label for="promotionCode" class="form-label">Mã khuyến mãi</label>
                 <div class="input-group">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="promotionCode"
-                    placeholder="Nhập mã"
-                    v-model.trim="promotionCodeInput"
-                    :disabled="applyingPromotion || !!appliedPromotion || cartStore.isLoading"
-                  />
+                  <select
+                      class="form-select"
+                      id="promotionCode"
+                      v-model="promotionCodeInput"
+                      :disabled="applyingPromotion || !!appliedPromotion || cartStore.isLoading"
+                    >
+                      <option value="" disabled>-- Chọn mã khuyến mãi --</option>
+                      <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
+                        {{ promo.label }} {{ promo.code }}
+                      </option>
+                    </select>
                   <button
                     class="btn btn-secondary"
                     type="button"
@@ -281,10 +284,40 @@ import { useRouter, RouterLink } from "vue-router";
 import { useCartStore } from "@/store/cart.js";
 import { applyPromotionCode } from "@/http/modules/public/promotionService.js";
 import defaultImage from "@/assets/images/placeholder.png";
+import { availablePromotions as fetchAvailablePromotions } from "@/http/modules/public/promotionService.js";
 
+// const availablePromotions = ref([]);
+
+// onMounted(async () => {
+//   try {
+//     const res = await fetchAvailablePromotions(); // <- đúng tên
+//     availablePromotions.value = res.data;
+//   } catch (err) {
+//     console.error("Lỗi khi gọi API khuyến mãi", err);
+//   }
+// });
+const availablePromotions = ref([]);
+
+onMounted(async () => {
+  try {
+    // Giả sử bạn lưu user trong localStorage khi login
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userRank = user?.rank || "Bronze"; // hoặc rank mặc định
+
+    const res = await fetchAvailablePromotions(userRank); // ✅ Truyền userRank vào
+    availablePromotions.value = res.data;
+  } catch (err) {
+    console.error("Lỗi khi gọi API khuyến mãi", err);
+  }
+});
 const router = useRouter();
 const cartStore = useCartStore();
-
+// giả lập data
+// const availablePromotions = ref([
+//   { code: "GIAM10", label: "Giảm 10%" },
+//   { code: "FREESHIP", label: "Miễn phí vận chuyển" },
+//   { code: "SUMMER20", label: "Giảm 20% mùa hè" },
+// ]);
 
 const updatingItemId = ref(null);
 const removingItemId = ref(null);
@@ -401,7 +434,7 @@ const handleApplyPromotion = async () => {
   try {
 
 
-    const response = await applyPromotionCode(code);
+    const response = await applyPromotionCode(code, cartStore.subtotal);
 
     if (response.data && response.data.success) {
 
