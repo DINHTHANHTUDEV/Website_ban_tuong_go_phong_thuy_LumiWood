@@ -2,7 +2,6 @@
   <div class="checkout-view container mt-4 mb-5">
     <h1 class="text-center mb-4">Thanh Toán Đơn Hàng</h1>
 
-
     <div v-if="loadingInfo || loadingShipping" class="text-center my-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Đang tải thông tin...</span>
@@ -10,21 +9,15 @@
       <p v-if="loadingInfo" class="mt-2 small text-muted">Đang tải thông tin tài khoản...</p>
       <p v-if="loadingShipping" class="mt-2 small text-muted">Đang tải phương thức vận chuyển...</p>
     </div>
-
-
     <div v-else-if="errorInfo || errorShipping" class="alert alert-danger">
       <p v-if="errorInfo">Lỗi tải thông tin tài khoản: {{ errorInfo }}</p>
       <p v-if="errorShipping" :class="{ 'mt-2': errorInfo }">
         Lỗi tải phương thức vận chuyển: {{ errorShipping }}
       </p>
     </div>
-
-
     <form v-else @submit.prevent="handlePlaceOrder" novalidate>
       <div class="row g-4">
-
         <div class="col-lg-7">
-
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">1. Thông tin giao hàng</h5>
@@ -55,11 +48,8 @@
                   </button>
                 </div>
               </div>
-
               <!-- thêm địa chỉ giao hàng mới -->
-              <div v-if="
-                isGuest || useNewAddress || (!isGuest && !checkoutInfo?.savedAddresses?.length)
-              ">
+              <div v-if="isGuest || useNewAddress || (!isGuest && !checkoutInfo?.savedAddresses?.length)">
                 <h6 v-if="!isGuest && checkoutInfo?.savedAddresses?.length > 0" class="mb-3">
                   Nhập địa chỉ mới:
                 </h6>
@@ -80,7 +70,6 @@
                       :disabled="placingOrder" />
                     <div class="invalid-feedback">{{ validationErrors.recipientPhone }}</div>
                   </div>
-
                   <div class="col-12" v-if="isGuest">
                     <label for="recipientEmail" class="form-label">Email <span class="text-danger">*</span></label>
                     <input type="email" class="form-control" :class="{ 'is-invalid': validationErrors.recipientEmail }"
@@ -129,14 +118,12 @@
               </div>
             </div>
           </div>
-
-          <!-- phương  thức vận chuyển -->
+          <!-- phương thức vận chuyển -->
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">2. Phương thức vận chuyển</h5>
             </div>
             <div class="card-body">
-
               <div v-if="!availableShippingMethods || availableShippingMethods.length === 0"
                 class="alert alert-warning small">
                 Không có phương thức vận chuyển nào khả dụng.
@@ -149,9 +136,7 @@
                     <div class="d-flex justify-content-between">
                       <div>
                         <strong>{{ method.name }}</strong>
-                        <small v-if="method.description" class="d-block text-muted">{{
-                          method.description
-                        }}</small>
+                        <small v-if="method.description" class="d-block text-muted">{{ method.description }}</small>
                         <small v-if="method.estimatedDelivery" class="d-block text-muted">Dự kiến: {{
                           method.estimatedDelivery }}</small>
                       </div>
@@ -165,7 +150,6 @@
               </div>
             </div>
           </div>
-
           <!-- phương thức thanh toán -->
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
@@ -174,26 +158,50 @@
             <div class="card-body">
               <div class="form-check mb-2">
                 <input class="form-check-input" type="radio" name="paymentMethod" id="payment-cod" value="COD"
-                  v-model="selectedPaymentMethod" required :disabled="placingOrder" />
+                  v-model="selectedPaymentMethod" required :disabled="placingOrder || (finalTotal >= 10000000)" />
                 <label class="form-check-label" for="payment-cod"><i class="bi bi-cash-coin me-1"></i> Thanh toán khi
                   nhận hàng (COD)</label>
               </div>
-              <div class="form-check mb-2">
+              <div class="form-check mb-4">
                 <input class="form-check-input" type="radio" name="paymentMethod" id="payment-bank"
-                  value="BANK_TRANSFER" v-model="selectedPaymentMethod" required :disabled="placingOrder" />
-                <label class="form-check-label" for="payment-bank"><i class="bi bi-bank me-1"></i> Chuyển khoản ngân
-                  hàng</label>
-                <div v-if="selectedPaymentMethod === 'BANK_TRANSFER'" class="alert alert-info small p-2 mt-2">
-                  <strong>Thông tin chuyển khoản:</strong><br />
-                  Ngân hàng: ABC Bank<br />
-                  Số TK: 1234567890<br />
-                  Chủ TK: Tượng Gỗ Phong Thủy<br />
-                  Nội dung: Mã đơn hàng [Mã đơn hàng sẽ được cấp sau khi đặt]
+                  value="BANK_TRANSFER" v-model="selectedPaymentMethod" required :disabled="placingOrder"
+                  :checked="finalTotal >= 10000000" />
+                <label class="form-check-label" for="payment-bank">
+                  <i class="bi bi-bank text-primary me-2"></i> Chuyển khoản ngân hàng
+                </label>
+                <!-- Hiển thị thông tin chuyển khoản khi finalTotal >= 10000000 -->
+                <div v-if="finalTotal >= 10000000 || selectedPaymentMethod === 'BANK_TRANSFER'" class="mt-3">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <div class="card border-0 payment-info-box p-4"
+                        style="background: linear-gradient(135deg, #ff7e5f, #feb47b); border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);">
+                        <div class="row align-items-center">
+                          <!-- Thông tin chuyển khoản -->
+                          <div class="col-md-8">
+                            <h5 class="text-white fw-bold mb-3">Thông tin chuyển khoản</h5>
+                            <ul class="list-unstyled mb-0">
+                              <li class="text-white mb-2"><strong>Ngân hàng:</strong> ABC Bank</li>
+                              <li class="text-white mb-2"><strong>Số TK:</strong> 1234567890</li>
+                              <li class="text-white mb-2"><strong>Chủ TK:</strong> Tượng Gỗ Phong Thủy</li>
+                              <li class="text-white mb-2"><strong>Nội dung:</strong> Mã đơn hàng [Mã đơn hàng sẽ được
+                                cấp sau khi đặt]</li>
+                            </ul>
+                          </div>
+                          <!-- QR Code -->
+                          <div class="col-md-4 text-center">
+                            <p class="text-white fw-semibold mb-2">Mã QR Thanh Toán</p>
+                            <img src="@/assets/images/qrcode.png" alt="QR Code Thanh Toán" class="img-fluid rounded"
+                              style="max-width: 150px; height: auto; border: 2px solid #fff; border-radius: 10px;">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="form-check mb-2">
                 <input class="form-check-input" type="radio" name="paymentMethod" id="payment-vnpay" value="VNPAY"
-                  v-model="selectedPaymentMethod" required :disabled="placingOrder" />
+                  v-model="selectedPaymentMethod" required :disabled="placingOrder || (finalTotal >= 10000000)" />
                 <label class="form-check-label" for="payment-vnpay"><i class="bi bi-credit-card me-1"></i> Thanh toán
                   qua VNPAY</label>
               </div>
@@ -202,7 +210,6 @@
               </div>
             </div>
           </div>
-
           <!-- ghi chú đơn hàng -->
           <div class="card shadow-sm">
             <div class="card-header bg-light">
@@ -214,7 +221,6 @@
             </div>
           </div>
         </div>
-
         <!-- tóm tắt đơn hàng, các sản phẩm trong giỏ hàng, tổng tiền, phí vận chuyển, mã giảm giá -->
         <div class="col-lg-5">
           <div class="card shadow-sm sticky-top" style="top: 80px">
@@ -222,7 +228,6 @@
               <h5 class="mb-0">Tóm tắt đơn hàng</h5>
             </div>
             <div class="card-body">
-
               <ul class="list-unstyled mb-3 small">
                 <li v-for="item in cartStore.items" :key="item.productId"
                   class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
@@ -235,7 +240,6 @@
                 </li>
               </ul>
               <hr />
-
               <ul class="list-group list-group-flush mb-3">
                 <li class="list-group-item d-flex justify-content-between px-0">
                   <span>Tạm tính:</span>
@@ -255,39 +259,43 @@
                   <span>Tổng cộng:</span>
                   <span>{{ formatCurrency(finalTotal) }}</span>
                 </li>
+                <!-- Hiển thị thông báo và thông tin đặt cọc khi tổng tiền >= 10 triệu -->
+                <div v-if="finalTotal >= 10000000" class="mb-2">
+                  <p class="text-danger fw-medium small">
+                    <strong>Lưu ý:</strong> Với đơn hàng có giá trị trên 10.000.000 VNĐ, Quý khách vui lòng đặt cọc 30%
+                    giá trị đơn hàng để xác nhận đặt mua. Số tiền còn lại sẽ được thanh toán sau khi nhận hàng. Cảm ơn
+                    Quý khách!
+                  </p>
+                </div>
+                <li v-if="finalTotal >= 10000000"
+                  class="list-group-item d-flex justify-content-between px-0 text-danger fw-medium">
+                  <span>Đặt cọc (30%):</span>
+                  <span>{{ formatCurrency(finalTotal * 0.3) }}</span>
+                </li>
+                <li v-if="finalTotal >= 10000000"
+                  class="list-group-item d-flex justify-content-between px-0 text-danger fw-medium">
+                  <span>Phần còn lại (70%):</span>
+                  <span>{{ formatCurrency(finalTotal * 0.7) }}</span>
+                </li>
               </ul>
-
-
               <div v-if="errorPlaceOrder" class="alert alert-danger">
                 {{ errorPlaceOrder }}
               </div>
-
-
               <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-danger btn-lg" :disabled="placingOrder ||
-                  cartStore.items.length === 0 ||
-                  loadingInfo ||
-                  loadingShipping ||
-                  !availableShippingMethods ||
-                  availableShippingMethods.length === 0
-                  ">
+                <button type="submit" class="btn btn-danger btn-lg"
+                  :disabled="placingOrder || cartStore.items.length === 0 || loadingInfo || loadingShipping || !availableShippingMethods || availableShippingMethods.length === 0">
                   <span v-if="placingOrder" class="spinner-border spinner-border-sm me-2" role="status"
                     aria-hidden="true"></span>
                   {{ placingOrder ? "Đang xử lý..." : "Đặt Hàng Ngay" }}
                 </button>
-
                 <router-link :to="{ name: 'shoppingCart' }" class="btn btn-outline-secondary">
                   <i class="bi bi-arrow-left-short"></i> Quay lại Giỏ hàng
                 </router-link>
-
                 <p v-if="cartStore.items.length === 0" class="text-danger small text-center mt-2">
                   Giỏ hàng trống, không thể đặt hàng.
                 </p>
-                <p v-if="
-                  availableShippingMethods &&
-                  availableShippingMethods.length === 0 &&
-                  !loadingShipping
-                " class="text-danger small text-center mt-2">
+                <p v-if="availableShippingMethods && availableShippingMethods.length === 0 && !loadingShipping"
+                  class="text-danger small text-center mt-2">
                   Không có PTVC, không thể đặt hàng.
                 </p>
               </div>
@@ -300,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, watch } from "vue";
 // Import các hook và tính năng từ Vue để quản lý trạng thái và vòng đời component
 import { useRouter } from "vue-router";
 // Import useRouter để điều hướng giữa các trang
@@ -358,13 +366,12 @@ const shippingAddressInput = reactive({
   city: "",
   // Tỉnh/Thành phố
 });
+
 const selectedShippingMethodId = ref(null);
 // Lưu ID của phương thức vận chuyển được chọn
-const selectedPaymentMethod = ref("COD");
-// Phương thức thanh toán mặc định (COD = Thanh toán khi nhận hàng)
+const selectedPaymentMethod = ref("COD"); // Khởi tạo mặc định là COD, sẽ được cập nhật sau
 const orderNote = ref("");
 // Ghi chú cho đơn hàng (nếu có)
-
 const placingOrder = ref(false);
 // Trạng thái đặt hàng (true khi đang xử lý, false khi hoàn tất)
 const errorPlaceOrder = ref(null);
@@ -414,7 +421,6 @@ const fetchShippingMethods = async () => {
     const response = await getActiveShippingMethods(); // Gọi API
     console.log("Response:", response.data); // Kiểm tra cấu trúc dữ liệu
     shippingMethods.value = response.data || []; // Cập nhật danh sách phương thức
-
     if (
       shippingMethods.value.length > 0 &&
       (!selectedShippingMethodId.value ||
@@ -617,7 +623,10 @@ const validateClientForm = () => {
     isValid = false;
   }
 
-  if (!selectedPaymentMethod.value) {
+  if (finalTotal >= 10000000 && selectedPaymentMethod.value !== "BANK_TRANSFER") {
+    validationErrors.paymentMethod = "Đơn hàng trên 10 triệu phải thanh toán qua Chuyển khoản ngân hàng.";
+    isValid = false;
+  } else if (!selectedPaymentMethod.value) {
     validationErrors.paymentMethod = "Vui lòng chọn phương thức thanh toán.";
     isValid = false;
   }
@@ -639,8 +648,7 @@ const handlePlaceOrder = async () => {
 
   // Chuẩn bị payload để gửi đến API
   const orderPayload = {
-    selectedShippingAddressId:
-      !isGuest.value && !useNewAddress.value ? selectedAddressId.value : null,
+    selectedShippingAddressId: !isGuest.value && !useNewAddress.value ? selectedAddressId.value : null,
     shippingAddressInput: isGuest.value || useNewAddress.value ? { ...shippingAddressInput } : null,
     shippingMethodId: selectedShippingMethodId.value,
     paymentMethod: selectedPaymentMethod.value,
@@ -730,6 +738,20 @@ onMounted(async () => {
       fetchShippingMethods(),
     ]);
   }
+
+  // Đặt phương thức thanh toán mặc định khi load trang
+  if (finalTotal >= 10000000) {
+    selectedPaymentMethod.value = "BANK_TRANSFER"; // Chọn Chuyển khoản nếu cần đặt cọc
+  }
+});
+
+// Theo dõi sự thay đổi của finalTotal để đặt phương thức thanh toán mặc định
+watch(() => finalTotal, (newTotal) => {
+  if (newTotal >= 10000000) {
+    selectedPaymentMethod.value = "BANK_TRANSFER"; // Chọn Chuyển khoản nếu cần đặt cọc
+  } else {
+    selectedPaymentMethod.value = "COD"; // Khôi phục COD nếu dưới 10 triệu
+  }
 });
 </script>
 
@@ -739,7 +761,6 @@ onMounted(async () => {
 }
 
 .sticky-top {
-
   top: 80px;
 }
 </style>
