@@ -1,17 +1,14 @@
 package com.example.websitebantuonggolumiwood.service;
 
 import com.example.websitebantuonggolumiwood.dto.AddAddressDTO;
-import com.example.websitebantuonggolumiwood.dto.OrderNoteDTO;
-import com.example.websitebantuonggolumiwood.entity.Addresses;
-import com.example.websitebantuonggolumiwood.entity.Order;
+import com.example.websitebantuonggolumiwood.entity.Address;
 import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.dto.AddressDTO;
 import com.example.websitebantuonggolumiwood.dto.UserListDTO;
-import com.example.websitebantuonggolumiwood.repository.AddressesRepository;
+import com.example.websitebantuonggolumiwood.repository.AddressRepository;
 import com.example.websitebantuonggolumiwood.repository.OrderRepository;
 import com.example.websitebantuonggolumiwood.repository.UserManagementRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -32,7 +29,7 @@ public class UserManagementService {
     private UserManagementRepository userManagementRepository;
 
     @Autowired
-    private AddressesRepository addressesRepository;
+    private AddressRepository addressRepository;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -128,8 +125,8 @@ public class UserManagementService {
      * Lấy danh sách địa chỉ giao hàng user
      */
     public List<AddressDTO> getAddresses(Long userId) {
-        List<Addresses> addresses =
-                addressesRepository.findAll()
+        List<Address> addresses =
+                addressRepository.findAll()
                         .stream()
                         .filter(a -> a.getUser() != null && a.getUser().getUserId().equals(userId))
                         .collect(Collectors.toList());
@@ -178,7 +175,7 @@ public class UserManagementService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user với ID: " + userId));
 
         // Tạo địa chỉ mới
-        Addresses address = new Addresses();
+        Address address = new Address();
         address.setUser(user);
         address.setRecipientName(addressDTO.getRecipientName());
         address.setRecipientPhone(addressDTO.getRecipientPhone());
@@ -191,7 +188,7 @@ public class UserManagementService {
         address.setUpdatedAt(LocalDateTime.now()); // Thiết lập thời gian cập nhật
 
         // Lưu địa chỉ
-        Addresses savedAddress = addressesRepository.save(address);
+        Address savedAddress = addressRepository.save(address);
 
         // Chuyển đổi sang DTO để trả về
         AddressDTO result = new AddressDTO();

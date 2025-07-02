@@ -11,6 +11,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ProductsEntity {
+public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -30,7 +31,7 @@ public class ProductsEntity {
     @Column(name = "description")
     private String description;
     @Column(name = "price")
-    private Double price;
+    private BigDecimal price;
     @Column(name = "stock")
     private Integer stock;
     @JsonProperty("imageUrl")
@@ -51,5 +52,5 @@ public class ProductsEntity {
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    private CategoriesEntity category;
+    private Category category;
 }

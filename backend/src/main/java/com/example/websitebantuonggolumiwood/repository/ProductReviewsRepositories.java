@@ -1,7 +1,6 @@
 package com.example.websitebantuonggolumiwood.repository;
 
 import com.example.websitebantuonggolumiwood.entity.ProductReviews;
-import com.example.websitebantuonggolumiwood.entity.ProductsEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

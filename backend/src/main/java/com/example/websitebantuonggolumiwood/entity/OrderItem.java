@@ -21,9 +21,9 @@ public class OrderItem {
     @Column(name = "id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", insertable = false, updatable = false)
-    private  ProductOrderHistory product;
+//    @ManyToOne
+//    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+//    private  ProductOrderHistory product;
 
     @Column(name = "product_id")
     private Integer productId;
@@ -35,11 +35,17 @@ public class OrderItem {
     @Column(name = "price_at_purchase")
     private BigDecimal priceAtPurchase;
 
+//    @ManyToOne
+//    @JoinColumn(name = "order_id")
+//    private OrdersHistory order;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    private Product product;
+
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private OrdersHistory order;
-
-
+    private Order order;
     // Getters/setters
 }
 

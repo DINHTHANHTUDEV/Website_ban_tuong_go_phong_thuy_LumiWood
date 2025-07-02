@@ -1,6 +1,6 @@
 package com.example.websitebantuonggolumiwood.service;
 
-import com.example.websitebantuonggolumiwood.entity.CategoriesEntity;
+import com.example.websitebantuonggolumiwood.entity.Category;
 import com.example.websitebantuonggolumiwood.repository.CategoriesRepositories;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +14,15 @@ public class CategoriesService {
         this.repositoriesCategories = repositoriesCategories;
     }
 
-    public List<CategoriesEntity> getAllCategories() {
+    public List<Category> getAllCategories() {
         return repositoriesCategories.findAll();
     }
 
-    public CategoriesEntity getCategoryBySlug(String slug) {
+    public Category getCategoryBySlug(String slug) {
         return repositoriesCategories.findBySlug(slug).get();
     }
 
-    public CategoriesEntity findById(Long categoryId) {
+    public Category findById(Long categoryId) {
         return repositoriesCategories.findById(categoryId).get();
     }
 }

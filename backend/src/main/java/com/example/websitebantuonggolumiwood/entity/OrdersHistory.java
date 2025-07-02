@@ -1,8 +1,5 @@
 package com.example.websitebantuonggolumiwood.entity;
 
-import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
-import com.example.websitebantuonggolumiwood.entity.ShippingMethodOrder;
-import com.example.websitebantuonggolumiwood.entity.UsersOrderHistory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -101,7 +98,7 @@ public class OrdersHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "promotion_id", insertable = false, updatable = false)
-    private PromotionOrderHistory promotion;
+    private Promotion promotion;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

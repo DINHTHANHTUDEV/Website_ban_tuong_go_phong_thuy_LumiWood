@@ -27,6 +27,7 @@ public class ShippingMethodDTO {
 
     private Integer estimatedDaysMax;
 
+
     private Boolean isActive;
 
 }

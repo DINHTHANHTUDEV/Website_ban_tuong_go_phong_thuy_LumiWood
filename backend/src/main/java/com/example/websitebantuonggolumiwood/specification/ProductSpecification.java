@@ -1,6 +1,6 @@
 package com.example.websitebantuonggolumiwood.specification;
 
-import com.example.websitebantuonggolumiwood.entity.ProductsEntity;
+import com.example.websitebantuonggolumiwood.entity.Product;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductSpecification {
-    public static Specification<ProductsEntity> filterBy(
+    public static Specification<Product> filterBy(
             List<Integer> categories,
             Double minPrice,
             Double maxPrice,
@@ -63,7 +63,7 @@ public class ProductSpecification {
         }
     }
     // lọc product admin
-    public static Specification<ProductsEntity> filter(String keyword, Integer categoryId, Boolean isActive) {
+    public static Specification<Product> filter(String keyword, Integer categoryId, Boolean isActive) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 

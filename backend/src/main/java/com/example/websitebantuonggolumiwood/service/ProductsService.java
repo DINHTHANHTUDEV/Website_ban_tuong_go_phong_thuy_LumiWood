@@ -1,8 +1,7 @@
 package com.example.websitebantuonggolumiwood.service;
 
-import com.example.websitebantuonggolumiwood.entity.ProductsEntity;
-import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
-import com.example.websitebantuonggolumiwood.repository.ProductsRepositories;
+import com.example.websitebantuonggolumiwood.entity.Product;
+import com.example.websitebantuonggolumiwood.repository.ProductRepository;
 import com.example.websitebantuonggolumiwood.specification.ProductSpecification;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,17 +12,17 @@ import java.util.Optional;
 
 @Service
 public class ProductsService {
-    private final ProductsRepositories repositoriesProduct;
-    private final ProductsRepositories productsRepositories;
+    private final ProductRepository repositoriesProduct;
+    private final ProductRepository productRepository;
 
-    public ProductsService(ProductsRepositories repositoriesProduct, ProductsRepositories productsRepositories) {
+    public ProductsService(ProductRepository repositoriesProduct, ProductRepository productRepository) {
         this.repositoriesProduct = repositoriesProduct;
-        this.productsRepositories = productsRepositories;
+        this.productRepository = productRepository;
     }
 
 
 
-    public ProductsEntity getProductsBySlug(String slug) {
+    public Product getProductsBySlug(String slug) {
         return repositoriesProduct.findBySlug(slug).get();
     }
 
@@ -43,9 +42,9 @@ public class ProductsService {
 //            return productsRepositories.findAll(spec, pageable);
 //
 //        }
-    public Page<ProductsEntity> filterProducts(List<Integer> categories, Double minPrice, Double maxPrice, String materials,
-                                               int page, int sizePerPage, String sortBy, String sortDir,
-                                               String keyword, String sizeCategory) {
+    public Page<Product> filterProducts(List<Integer> categories, Double minPrice, Double maxPrice, String materials,
+                                        int page, int sizePerPage, String sortBy, String sortDir,
+                                        String keyword, String sizeCategory) {
 
         // Validate sort field
         List<String> allowedSortFields = List.of("price", "name", "createdAt");
@@ -57,8 +56,8 @@ public class ProductsService {
         Sort sort = Sort.by(direction, sortBy);
 
         // Lấy toàn bộ sản phẩm (chưa lọc keyword)
-        Specification<ProductsEntity> spec = ProductSpecification.filterBy(categories, minPrice, maxPrice, materials);
-        List<ProductsEntity> allProducts = productsRepositories.findAll(spec, sort);
+        Specification<Product> spec = ProductSpecification.filterBy(categories, minPrice, maxPrice, materials);
+        List<Product> allProducts = productRepository.findAll(spec, sort);
 
         // Lọc keyword không dấu
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -95,7 +94,7 @@ public class ProductsService {
         int total = allProducts.size();
         int start = page * sizePerPage;
         int end = Math.min(start + sizePerPage, total);
-        List<ProductsEntity> content = (start <= end) ? allProducts.subList(start, end) : List.of();
+        List<Product> content = (start <= end) ? allProducts.subList(start, end) : List.of();
 
         Pageable pageable = PageRequest.of(page, sizePerPage, sort);
         return new PageImpl<>(content, pageable, total);
@@ -107,19 +106,19 @@ public class ProductsService {
 
 
 
-    public List<ProductsEntity> getProductsByCategorySlug(String slug) {
+    public List<Product> getProductsByCategorySlug(String slug) {
         return repositoriesProduct.findByCategorySlug(slug);
     }
 
-    public ProductsEntity save(ProductsEntity product) {
+    public Product save(Product product) {
         return repositoriesProduct.save(product);
     }
 
-    public ProductsEntity getProductById(Integer id) {
+    public Product getProductById(Integer id) {
         return repositoriesProduct.findById(id).get();
     }
-    public Optional<ProductsEntity> findById(int id) {
-        return productsRepositories.findById(id);
+    public Optional<Product> findById(int id) {
+        return productRepository.findById(id);
     }
 
 

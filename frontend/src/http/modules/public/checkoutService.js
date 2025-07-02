@@ -149,76 +149,76 @@ export const getCheckoutInfo = () => {
     });
 };
 
-// Hàm đặt hàng (place order)
-export const placeOrder = (orderData) => {
-  // Kiểm tra xem dữ liệu đơn hàng có hợp lệ không (cần có địa chỉ giao hàng và phương thức thanh toán)
-  if (!orderData || !orderData.shippingAddressId || !orderData.paymentMethodId) {
-    return Promise.reject(new Error("Shipping address, and payment method are required for mock order."));
-  }
+// // Hàm đặt hàng (place order)
+// export const placeOrder = (orderData) => {
+//   // Kiểm tra xem dữ liệu đơn hàng có hợp lệ không (cần có địa chỉ giao hàng và phương thức thanh toán)
+//   if (!orderData || !orderData.shippingAddressId || !orderData.paymentMethodId) {
+//     return Promise.reject(new Error("Shipping address, and payment method are required for mock order."));
+//   }
   
-  // Sử dụng simulateDelay để giả lập độ trễ khi đặt hàng
-  return simulateDelay(() => {
-    // Tạo ID đơn hàng giả lập với định dạng MOCKORD-thời gian hiện tại-số ngẫu nhiên
-    const orderId = `MOCKORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    // Tạo thông tin giỏ hàng giả lập
-    const cartInfo = generateMockCartSummary();
-    // Tìm phương thức vận chuyển dựa trên ID, nếu không tìm thấy thì dùng phương thức đầu tiên
-    const shippingMethod = MOCK_SHIPPING_METHODS_CHECKOUT.find(sm => sm.id === orderData.shippingMethodId) || MOCK_SHIPPING_METHODS_CHECKOUT[0];
-    // Tìm phương thức thanh toán dựa trên ID, nếu không tìm thấy thì dùng phương thức đầu tiên
-    const paymentMethod = MOCK_PAYMENT_METHODS_CHECKOUT.find(pm => pm.id === orderData.paymentMethodId) || MOCK_PAYMENT_METHODS_CHECKOUT[0];
+//   // Sử dụng simulateDelay để giả lập độ trễ khi đặt hàng
+//   return simulateDelay(() => {
+//     // Tạo ID đơn hàng giả lập với định dạng MOCKORD-thời gian hiện tại-số ngẫu nhiên
+//     const orderId = `MOCKORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+//     // Tạo thông tin giỏ hàng giả lập
+//     const cartInfo = generateMockCartSummary();
+//     // Tìm phương thức vận chuyển dựa trên ID, nếu không tìm thấy thì dùng phương thức đầu tiên
+//     const shippingMethod = MOCK_SHIPPING_METHODS_CHECKOUT.find(sm => sm.id === orderData.shippingMethodId) || MOCK_SHIPPING_METHODS_CHECKOUT[0];
+//     // Tìm phương thức thanh toán dựa trên ID, nếu không tìm thấy thì dùng phương thức đầu tiên
+//     const paymentMethod = MOCK_PAYMENT_METHODS_CHECKOUT.find(pm => pm.id === orderData.paymentMethodId) || MOCK_PAYMENT_METHODS_CHECKOUT[0];
 
-    // Xác định thời gian giao hàng ước tính dựa trên phương thức vận chuyển
-    let estimatedDeliveryDays = 5;
-    if (shippingMethod.name.toLowerCase().includes("express")) estimatedDeliveryDays = 2;
-    else if (shippingMethod.name.toLowerCase().includes("standard")) estimatedDeliveryDays = 4;
+//     // Xác định thời gian giao hàng ước tính dựa trên phương thức vận chuyển
+//     let estimatedDeliveryDays = 5;
+//     if (shippingMethod.name.toLowerCase().includes("express")) estimatedDeliveryDays = 2;
+//     else if (shippingMethod.name.toLowerCase().includes("standard")) estimatedDeliveryDays = 4;
 
-    // Tạo ngày đặt hàng và ngày giao hàng ước tính
-    const orderDate = new Date();
-    const estimatedDeliveryDate = new Date(orderDate);
-    estimatedDeliveryDate.setDate(orderDate.getDate() + estimatedDeliveryDays);
+//     // Tạo ngày đặt hàng và ngày giao hàng ước tính
+//     const orderDate = new Date();
+//     const estimatedDeliveryDate = new Date(orderDate);
+//     estimatedDeliveryDate.setDate(orderDate.getDate() + estimatedDeliveryDays);
 
-    // Trả về thông tin đơn hàng chi tiết
-    return {
-      // ID đơn hàng
-      orderId: orderId,
-      // Ngày đặt hàng (định dạng ISO)
-      orderDate: orderDate.toISOString(),
-      // Trạng thái đơn hàng ban đầu
-      status: "PENDING_CONFIRMATION_MOCK",
-      // Tổng số tiền của đơn hàng
-      totalAmount: cartInfo.finalPrice,
-      // Địa chỉ giao hàng (sử dụng địa chỉ được chọn hoặc tạo mới)
-      shippingAddress: orderData.selectedShippingAddress || generateMockAddress("final_ship"),
-      // Địa chỉ thanh toán (sử dụng địa chỉ được chọn hoặc tạo mới)
-      billingAddress: orderData.selectedBillingAddress || generateMockAddress("final_bill"),
-      // Tên phương thức vận chuyển
-      shippingMethodName: shippingMethod.name,
-      // Tên phương thức thanh toán
-      paymentMethodName: paymentMethod.name,
-      // Danh sách sản phẩm trong đơn hàng
-      items: cartInfo.items.map(item => ({
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        // Tổng giá trị của từng sản phẩm (số lượng * đơn giá)
-        itemTotalPrice: parseFloat((item.quantity * item.unitPrice).toFixed(2))
-      })),
-      // Tổng giá trị trước giảm giá
-      subtotal: cartInfo.subtotalPrice,
-      // Số tiền giảm giá
-      discountApplied: cartInfo.discountAmount,
-      // Phí vận chuyển
-      shippingFee: cartInfo.shippingCost,
-      // Ngày giao hàng ước tính (định dạng ISO)
-      estimatedDeliveryDate: estimatedDeliveryDate.toISOString(),
-      // Số theo dõi đơn hàng (hiện tại để null vì là giả lập)
-      trackingNumber: null,
-      // Ghi chú của khách hàng (nếu có)
-      customerNotes: orderData.notes || null
-    };
-  });
-};
+//     // Trả về thông tin đơn hàng chi tiết
+//     return {
+//       // ID đơn hàng
+//       orderId: orderId,
+//       // Ngày đặt hàng (định dạng ISO)
+//       orderDate: orderDate.toISOString(),
+//       // Trạng thái đơn hàng ban đầu
+//       status: "PENDING_CONFIRMATION_MOCK",
+//       // Tổng số tiền của đơn hàng
+//       totalAmount: cartInfo.finalPrice,
+//       // Địa chỉ giao hàng (sử dụng địa chỉ được chọn hoặc tạo mới)
+//       shippingAddress: orderData.selectedShippingAddress || generateMockAddress("final_ship"),
+//       // Địa chỉ thanh toán (sử dụng địa chỉ được chọn hoặc tạo mới)
+//       billingAddress: orderData.selectedBillingAddress || generateMockAddress("final_bill"),
+//       // Tên phương thức vận chuyển
+//       shippingMethodName: shippingMethod.name,
+//       // Tên phương thức thanh toán
+//       paymentMethodName: paymentMethod.name,
+//       // Danh sách sản phẩm trong đơn hàng
+//       items: cartInfo.items.map(item => ({
+//         productId: item.productId,
+//         productName: item.productName,
+//         quantity: item.quantity,
+//         unitPrice: item.unitPrice,
+//         // Tổng giá trị của từng sản phẩm (số lượng * đơn giá)
+//         itemTotalPrice: parseFloat((item.quantity * item.unitPrice).toFixed(2))
+//       })),
+//       // Tổng giá trị trước giảm giá
+//       subtotal: cartInfo.subtotalPrice,
+//       // Số tiền giảm giá
+//       discountApplied: cartInfo.discountAmount,
+//       // Phí vận chuyển
+//       shippingFee: cartInfo.shippingCost,
+//       // Ngày giao hàng ước tính (định dạng ISO)
+//       estimatedDeliveryDate: estimatedDeliveryDate.toISOString(),
+//       // Số theo dõi đơn hàng (hiện tại để null vì là giả lập)
+//       trackingNumber: null,
+//       // Ghi chú của khách hàng (nếu có)
+//       customerNotes: orderData.notes || null
+//     };
+//   });
+// };
 
 import apiClient from '@/http/axios';
 
@@ -253,5 +253,65 @@ export const addAddress = (addressData) => {
     .catch(error => {
       console.error('Error adding address:', error); // Log lỗi
       throw error; // Ném lỗi để FE xử lý
+    });
+};
+
+// Hàm đặt hàng (place order)
+export const placeOrder = (orderData) => {
+  // Kiểm tra xem dữ liệu đơn hàng có hợp lệ không
+  if (!orderData || !orderData.shippingMethodId || !orderData.paymentMethod) {
+    return Promise.reject(new Error("Shipping method and payment method are required for placing an order."));
+  }
+
+  // Chuẩn bị dữ liệu gửi lên API backend
+  const requestData = {
+    shippingMethodId: orderData.shippingMethodId,
+    paymentMethod: orderData.paymentMethod,
+    // Sử dụng selectedShippingAddressId nếu có (cho user đã đăng nhập)
+    selectedShippingAddressId: orderData.selectedShippingAddressId || null,
+    // Sử dụng shippingAddressInput nếu là guest hoặc không có địa chỉ đã lưu
+    shippingAddressInput: orderData.selectedShippingAddressId
+      ? null
+      : {
+          recipientName: orderData.recipientName,
+          recipientPhone: orderData.recipientPhone,
+          streetAddress: orderData.streetAddress,
+          ward: orderData.ward,
+          district: orderData.district,
+          city: orderData.city
+        },
+    orderNote: orderData.orderNote || null, // Ghi chú (tùy chọn)
+    appliedPromotionCode: orderData.appliedPromotionCode || null // Mã khuyến mãi (tùy chọn)
+  };
+
+  // Gọi API backend để đặt hàng
+  return apiClient
+    .post('/api/customer/checkout/place-order', requestData)
+    .then((response) => {
+      // Trả về dữ liệu từ API để hiển thị trên FE
+      const orderSummary = response.data;
+      return {
+        orderId: orderSummary.orderId,
+        orderDate: orderSummary.orderDate,
+        orderStatus: orderSummary.orderStatus,
+        finalAmount: orderSummary.finalAmount,
+        depositAmount: orderSummary.depositAmount || 0, // Số tiền đặt cọc (0 nếu không áp dụng)
+        depositStatus: orderSummary.depositStatus || null, // Trạng thái đặt cọc
+        paymentMethod: orderSummary.paymentMethod,
+        successMessage: orderSummary.successMessage,
+        items: orderSummary.items || [], // Danh sách sản phẩm (nếu API trả về)
+        shippingMethodName: orderSummary.shippingMethodName || 'N/A', // Tên phương thức vận chuyển
+        estimatedDeliveryDate: orderSummary.estimatedDeliveryDate || null // Ngày giao hàng ước tính
+      };
+    })
+    .catch((error) => {
+      // Xử lý lỗi từ API và ném lại để FE xử lý
+      if (error.response) {
+        throw new Error(error.response.data.message || 'Failed to place order. Please try again.');
+      } else if (error.request) {
+        throw new Error('No response from server. Check your network connection.');
+      } else {
+        throw new Error('Error in setting up the request: ' + error.message);
+      }
     });
 };

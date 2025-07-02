@@ -1,83 +1,131 @@
 package com.example.websitebantuonggolumiwood.controller;
 
-import com.example.websitebantuonggolumiwood.dto.CartItemDTO;
 import com.example.websitebantuonggolumiwood.dto.CartDTO;
+import com.example.websitebantuonggolumiwood.dto.CartItemDTO;
 import com.example.websitebantuonggolumiwood.dto.MergeCartDTO;
 import com.example.websitebantuonggolumiwood.entity.Cart;
-import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
 import com.example.websitebantuonggolumiwood.repository.PromotionRepository;
+import com.example.websitebantuonggolumiwood.security.model.UserPrincipal;
 import com.example.websitebantuonggolumiwood.service.CartService;
 import com.example.websitebantuonggolumiwood.service.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cart")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173") // Cho phép frontend gọi API từ localhost
 public class CartController {
-    @Autowired private CartService cartService;
-    @Autowired
-    private PromotionRepository promotionRepository;
-    @Autowired
-    private ProductsService productsService;
 
+    @Autowired private CartService cartService;
+    @Autowired private PromotionRepository promotionRepository;
+    @Autowired private ProductsService productsService;
+
+    /**
+     * ✅ API lấy giỏ hàng hiện tại.
+     * Không tạo cart nếu chưa có (để đúng theo logic business mới).
+     */
     @GetMapping
-    public ResponseEntity<CartDTO> viewCart(
-            @RequestParam(required = false) Integer userId,
+    public ResponseEntity<?> viewCart(
+            Authentication authentication,
             @RequestParam(required = false) String sessionId) {
+
+        Integer userId = (authentication != null && authentication.isAuthenticated())
+                ? ((UserPrincipal) authentication.getPrincipal()).getUserId().intValue()
+                : null;
+
         Cart cart = cartService.getOrCreateCart(userId, sessionId);
+
+        if (cart == null) {
+            return ResponseEntity.ok(new CartDTO()); // Trả về giỏ rỗng nếu chưa tồn tại
+        }
+
         return ResponseEntity.ok(cartService.getCartResponse(cart));
     }
 
+    /**
+     * ✅ API thêm sản phẩm vào giỏ hàng.
+     * Tự tạo giỏ nếu chưa có (chỉ lúc thêm sp mới tạo giỏ).
+     */
     @PostMapping("/add")
     public ResponseEntity<CartDTO> addToCart(
-            @RequestParam(required = false) Integer userId,
+            Authentication authentication,
             @RequestParam(required = false) String sessionId,
             @RequestBody CartItemDTO request) {
-        return ResponseEntity.ok(cartService.addToCart(userId, sessionId, request));
+
+        Integer userId = (authentication != null && authentication.isAuthenticated())
+                ? ((UserPrincipal) authentication.getPrincipal()).getUserId().intValue()
+                : null;
+
+        CartDTO cartDTO = cartService.addToCart(userId, sessionId, request);
+        return ResponseEntity.ok(cartDTO);
     }
 
+    /**
+     * ✅ API cập nhật số lượng sản phẩm trong giỏ hàng.
+     */
     @PutMapping("/update")
     public ResponseEntity<CartDTO> updateQuantity(
-            @RequestParam(required = false) Integer userId,
+            Authentication authentication,
             @RequestParam(required = false) String sessionId,
             @RequestBody CartItemDTO request) {
-        return ResponseEntity.ok(cartService.updateQuantity(userId, sessionId, request));
+
+        Integer userId = (authentication != null && authentication.isAuthenticated())
+                ? ((UserPrincipal) authentication.getPrincipal()).getUserId().intValue()
+                : null;
+
+        CartDTO cartDTO = cartService.updateQuantity(userId, sessionId, request);
+        return ResponseEntity.ok(cartDTO);
     }
 
+    /**
+     * ✅ API xóa 1 sản phẩm khỏi giỏ hàng.
+     */
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<CartDTO> removeItem(
-            @RequestParam(required = false) Integer userId,
+            Authentication authentication,
             @RequestParam(required = false) String sessionId,
             @PathVariable Integer productId) {
-        return ResponseEntity.ok(cartService.removeItem(userId, sessionId, productId));
+
+        Integer userId = (authentication != null && authentication.isAuthenticated())
+                ? ((UserPrincipal) authentication.getPrincipal()).getUserId().intValue()
+                : null;
+
+        CartDTO cartDTO = cartService.removeItem(userId, sessionId, productId);
+        return ResponseEntity.ok(cartDTO);
     }
 
+    /**
+     * ✅ API xóa toàn bộ giỏ hàng.
+     */
     @DeleteMapping("/clear")
-    public ResponseEntity<CartDTO> clearCart(
-            @RequestParam(required = false) Integer userId,
+    public ResponseEntity<Void> clearCart(
+            Authentication authentication,
             @RequestParam(required = false) String sessionId) {
-        return ResponseEntity.ok(cartService.clearCart(userId, sessionId));
+
+        Integer userId = (authentication != null && authentication.isAuthenticated())
+                ? ((UserPrincipal) authentication.getPrincipal()).getUserId().intValue()
+                : null;
+
+        cartService.clearCart(userId, sessionId);
+        return ResponseEntity.ok().build();
     }
 
+    /**
+     * ✅ API gộp giỏ hàng của guest vào giỏ hàng user sau khi đăng nhập.
+     * Khi user thêm hàng khi chưa login, login rồi merge.
+     */
     @PostMapping("/merge")
     public ResponseEntity<CartDTO> mergeGuestCart(
-            @RequestParam Integer userId,
+            Authentication authentication,
             @RequestBody MergeCartDTO request) {
-        return ResponseEntity.ok(cartService.mergeGuestCart(userId, request.getSessionId()));
+
+        Integer userId = (authentication != null && authentication.isAuthenticated())
+                ? ((UserPrincipal) authentication.getPrincipal()).getUserId().intValue()
+                : null;
+
+        CartDTO cartDTO = cartService.mergeGuestCart(userId, request.getSessionId());
+        return ResponseEntity.ok(cartDTO);
     }
-
-
 }

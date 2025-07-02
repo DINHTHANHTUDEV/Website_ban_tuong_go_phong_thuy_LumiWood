@@ -1,10 +1,8 @@
 package com.example.websitebantuonggolumiwood.controller;
 
-import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
+import com.example.websitebantuonggolumiwood.entity.Promotion;
 import com.example.websitebantuonggolumiwood.entity.PromotionResponse;
-import com.example.websitebantuonggolumiwood.service.ProductsService;
 import com.example.websitebantuonggolumiwood.service.PromotionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +19,7 @@ public class PromotionController {
 
 
     @GetMapping("/hienthi")
-    public List<PromotionOrderHistory> getPromotionOrderHistory(@RequestParam String userRank) {
+    public List<Promotion> getPromotionOrderHistory(@RequestParam String userRank) {
         return promotionService.getAllValidPromotions(userRank);
     }
     @PostMapping("/apply")

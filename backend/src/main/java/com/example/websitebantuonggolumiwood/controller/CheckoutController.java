@@ -1,18 +1,14 @@
 package com.example.websitebantuonggolumiwood.controller;
 
-import com.example.websitebantuonggolumiwood.dto.AddAddressDTO;
-import com.example.websitebantuonggolumiwood.dto.AddressDTO;
-import com.example.websitebantuonggolumiwood.dto.OrderNoteDTO;
-import com.example.websitebantuonggolumiwood.dto.ShippingMethodDTO;
-import com.example.websitebantuonggolumiwood.entity.Order;
+import com.example.websitebantuonggolumiwood.dto.*;
 import com.example.websitebantuonggolumiwood.entity.ShippingMethod;
 import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.repository.OrderRepository;
 import com.example.websitebantuonggolumiwood.repository.ShippingMethodAdminRepository;
 import com.example.websitebantuonggolumiwood.repository.UserManagementRepository;
+import com.example.websitebantuonggolumiwood.service.CheckoutService;
 import com.example.websitebantuonggolumiwood.service.OrderService;
 import com.example.websitebantuonggolumiwood.service.UserManagementService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/customer/checkout")
-public class CheckOutController {
+public class CheckoutController {
 
     // su dung UserManagementService va UserManagementRepository vi truoc do da lay address o day roi
     //nen gio muon lay o day luon de khong phai tao service va repository moi
@@ -47,6 +43,13 @@ public class CheckOutController {
 
     @Autowired
     private OrderService orderService;
+
+    private final CheckoutService checkoutService;
+
+    @Autowired
+    public CheckoutController(CheckoutService checkoutService) {
+        this.checkoutService = checkoutService;
+    }
     /**
      * Lấy danh sách địa chỉ giao hàng của user đang đăng nhập.
      * @param userDetails Thông tin người dùng từ Spring Security.
@@ -119,24 +122,18 @@ public class CheckOutController {
     }
 
     /**
-     * Đặt đơn hàng mới với ghi chú cho user đang đăng nhập.
-     * @param userDetails Thông tin người dùng từ Spring Security.
-     * @param orderNoteDTO Thông tin ghi chú từ request body.
-     * @return ResponseEntity chứa OrderNoteDTO của đơn hàng vừa đặt.
+     * API để đặt hàng
+     * @param request Dữ liệu yêu cầu đặt hàng từ frontend
+     * @param userDetails Thông tin người dùng từ JWT token
+     * @return OrderSummaryDTO chứa thông tin tóm tắt đơn hàng
      */
-//    @PostMapping("/place-order/order-note")
-//    public ResponseEntity<OrderNoteDTO> placeOrder(@AuthenticationPrincipal UserDetails userDetails,
-//                                                   @Valid @RequestBody OrderNoteDTO orderNoteDTO) {
-//        if (userDetails == null) {
-//            throw new IllegalStateException("Người dùng chưa đăng nhập");
-//        }
-//        String username = userDetails.getUsername();
-//        Optional<User> userOpt = userManagementRepository.findByUsername(username);
-//        Long userId = userOpt.map(User::getUserId)
-//                .orElseThrow(() -> new IllegalStateException("Không tìm thấy user với username: " + username));
-//
-//        // Gọi service để đặt đơn hàng với ghi chú
-//        OrderNoteDTO placedOrder = userManagementService.placeOrder(userId, orderNoteDTO);
-//        return ResponseEntity.ok(placedOrder);
-//    }
+    @PostMapping("/place-order")
+    public ResponseEntity<OrderSummaryDTO> placeOrder(
+            @Valid @RequestBody PlaceOrderRequestDTO request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails != null ? userDetails.getUsername() : null;
+        OrderSummaryDTO summary = checkoutService.placeOrder(request, username);
+        return ResponseEntity.ok(summary);
+    }
+
 }

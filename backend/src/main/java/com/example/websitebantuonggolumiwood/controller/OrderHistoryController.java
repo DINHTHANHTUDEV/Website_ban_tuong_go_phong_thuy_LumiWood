@@ -139,7 +139,7 @@ public class OrderHistoryController {
 
             if (item.getProduct() != null) {
                 itemDto.setProductName(item.getProduct().getName());
-                itemDto.setProductImageUrl(item.getProduct().getImageUrl());
+                itemDto.setProductImageUrl(item.getProduct().getImage_url());
             }
 
             return itemDto;

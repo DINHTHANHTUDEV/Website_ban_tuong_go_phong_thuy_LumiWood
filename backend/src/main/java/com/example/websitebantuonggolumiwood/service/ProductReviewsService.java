@@ -2,17 +2,14 @@ package com.example.websitebantuonggolumiwood.service;
 
 import com.example.websitebantuonggolumiwood.dto.ProductReviewDTO;
 import com.example.websitebantuonggolumiwood.entity.ProductReviews;
-import com.example.websitebantuonggolumiwood.entity.ProductsEntity;
+import com.example.websitebantuonggolumiwood.entity.Product;
 import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.repository.ProductReviewsRepositories;
-import com.example.websitebantuonggolumiwood.repository.ProductsRepositories;
+import com.example.websitebantuonggolumiwood.repository.ProductRepository;
 import com.example.websitebantuonggolumiwood.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,13 +18,13 @@ import java.time.LocalDateTime;
 
 public class ProductReviewsService {
     private final ProductReviewsRepositories productReviewsRepositories;
-    private final ProductsRepositories productsRepositories;
+    private final ProductRepository productRepository;
     @Autowired
     private UserRepository userRepository;
 
-    public ProductReviewsService(ProductReviewsRepositories productReviewsRepositories, ProductsRepositories productsRepositories) {
+    public ProductReviewsService(ProductReviewsRepositories productReviewsRepositories, ProductRepository productRepository) {
         this.productReviewsRepositories = productReviewsRepositories;
-        this.productsRepositories = productsRepositories;
+        this.productRepository = productRepository;
     }
     public Page<ProductReviewDTO> getApprovedReviewDTOsByProductId(Integer productId, Pageable pageable) {
         Page<ProductReviews> reviews = productReviewsRepositories.findByProduct_IdAndIsApprovedTrue(productId, pageable);
@@ -71,7 +68,7 @@ public class ProductReviewsService {
 
 public ProductReviews addReview(Integer productId, ProductReviews review, String username) {
     // Lấy sản phẩm
-    ProductsEntity product = productsRepositories.findById(productId)
+    Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
     // Lấy user

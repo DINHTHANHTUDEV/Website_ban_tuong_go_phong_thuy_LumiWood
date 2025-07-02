@@ -221,6 +221,8 @@
             </div>
           </div>
         </div>
+
+
         <!-- tóm tắt đơn hàng, các sản phẩm trong giỏ hàng, tổng tiền, phí vận chuyển, mã giảm giá -->
         <div class="col-lg-5">
           <div class="card shadow-sm sticky-top" style="top: 80px">
@@ -635,73 +637,86 @@ const validateClientForm = () => {
 };
 
 const handlePlaceOrder = async () => {
-  // Hàm xử lý đặt hàng
-  errorPlaceOrder.value = null; // Xóa lỗi cũ
+  // Hàm xử lý đặt hàng, gửi dữ liệu đến backend để lưu vào database
+  errorPlaceOrder.value = null; // Xóa lỗi cũ trước khi xử lý
   if (!validateClientForm()) {
-    // Kiểm tra form, nếu không hợp lệ thì dừng
+    // Kiểm tra tính hợp lệ của form, dừng nếu không hợp lệ
     const firstError = document.querySelector(".is-invalid, .text-danger.small");
     firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 
-  placingOrder.value = true; // Bắt đầu xử lý đặt hàng
+  placingOrder.value = true; // Bật trạng thái đang xử lý đặt hàng
 
-  // Chuẩn bị payload để gửi đến API
+  // Chuẩn bị payload để gửi đến API backend
   const orderPayload = {
-    selectedShippingAddressId: !isGuest.value && !useNewAddress.value ? selectedAddressId.value : null,
-    shippingAddressInput: isGuest.value || useNewAddress.value ? { ...shippingAddressInput } : null,
-    shippingMethodId: selectedShippingMethodId.value,
-    paymentMethod: selectedPaymentMethod.value,
-    appliedPromotionCode: appliedPromotionSummary.value?.code || null,
-    orderNote: orderNote.value || null,
+    shippingMethodId: selectedShippingMethodId.value, // ID phương thức vận chuyển được chọn
+    paymentMethod: selectedPaymentMethod.value, // Phương thức thanh toán (COD hoặc BANK_TRANSFER)
+    selectedShippingAddressId: !isGuest.value && !useNewAddress.value ? selectedAddressId.value : null, // ID địa chỉ đã lưu (nếu user không dùng địa chỉ mới)
+    shippingAddressInput: (isGuest.value || useNewAddress.value) ? {
+      // Thông tin địa chỉ mới (nếu guest hoặc dùng địa chỉ mới)
+      recipientName: shippingAddressInput.recipientName,
+      recipientPhone: shippingAddressInput.recipientPhone,
+      recipientEmail: shippingAddressInput.recipientEmail, // Bao gồm email cho guest
+      streetAddress: shippingAddressInput.streetAddress,
+      ward: shippingAddressInput.ward,
+      district: shippingAddressInput.district,
+      city: shippingAddressInput.city
+    } : null,
+    orderNote: orderNote.value || null, // Ghi chú cho đơn hàng (tùy chọn)
+    appliedPromotionCode: appliedPromotionSummary.value?.code || null // Mã giảm giá áp dụng (tùy chọn)
   };
 
-  if (!isGuest.value && orderPayload.shippingAddressInput) {
-    // Xóa email nếu không phải khách lẻ
-    delete orderPayload.shippingAddressInput.recipientEmail;
-  }
-  if (
-    isGuest.value &&
-    orderPayload.shippingAddressInput &&
-    !orderPayload.shippingAddressInput.recipientEmail
-  ) {
-    // Kiểm tra email cho khách lẻ
-    console.error("Guest email missing in payload!");
-    errorPlaceOrder.value = "Lỗi: Email khách hàng bị thiếu.";
+  // Xác minh dữ liệu trước khi gửi
+  if (!availableShippingMethods.value.some(m => m.id === orderPayload.shippingMethodId)) {
+    errorPlaceOrder.value = "Phương thức vận chuyển không hợp lệ. Vui lòng chọn lại.";
     placingOrder.value = false;
     return;
   }
 
-  console.log("Placing order with payload:", JSON.stringify(orderPayload, null, 2));
+  // Xóa email nếu không phải khách lẻ (theo logic hiện tại)
+  if (!isGuest.value && orderPayload.shippingAddressInput) {
+    delete orderPayload.shippingAddressInput.recipientEmail; // Loại bỏ email cho user đã đăng nhập
+  }
+
+  // Kiểm tra email cho khách lẻ
+  if (isGuest.value && orderPayload.shippingAddressInput && !orderPayload.shippingAddressInput.recipientEmail) {
+    console.error("Guest email missing in payload!"); // Log lỗi nếu thiếu email
+    errorPlaceOrder.value = "Lỗi: Email khách hàng bị thiếu."; // Hiển thị lỗi
+    placingOrder.value = false; // Tắt trạng thái xử lý
+    return;
+  }
+
+  console.log("Placing order with payload:", JSON.stringify(orderPayload, null, 2)); // Log payload để debug
 
   try {
-    const response = await placeOrder(orderPayload); // Gọi API đặt hàng
-    const orderSummary = response.data;
-    console.log("Order placed successfully:", orderSummary);
+    const orderSummary = await placeOrder(orderPayload); // Gọi API để đặt hàng và lưu vào database
+    console.log("Order placed successfully:", orderSummary); // Log phản hồi từ API
 
-    cartStore.clearClientCart(); // Xóa giỏ hàng sau khi đặt thành công
-    sessionStorage.removeItem("appliedPromo"); // Xóa khuyến mãi đã áp dụng
+    // Sau khi đặt hàng thành công, xóa giỏ hàng và khuyến mãi khỏi client
+    cartStore.clearClientCart(); // Xóa giỏ hàng trong store
+    sessionStorage.removeItem("appliedPromo"); // Xóa mã khuyến mãi đã áp dụng
 
+    // Xử lý chuyển hướng dựa trên phản hồi từ API
     if (orderSummary.paymentUrl) {
-      // Nếu có URL thanh toán, chuyển hướng
-      window.location.href = orderSummary.paymentUrl;
+      window.location.href = orderSummary.paymentUrl; // Chuyển đến URL thanh toán nếu có
     } else {
-      // Nếu không, chuyển đến trang thành công
-      router.push({ name: "orderSuccess", params: { orderId: orderSummary.orderId } });
+      router.push({ name: "orderSuccess", params: { orderId: orderSummary.orderId } }); // Chuyển đến trang thành công
     }
   } catch (err) {
-    // Xử lý lỗi khi đặt hàng
-    console.error("Error placing order:", err);
-    placingOrder.value = false;
-    if (err.response?.data?.message) {
-      errorPlaceOrder.value = err.response.data.message;
-    } else if (err.response?.status === 400) {
-      errorPlaceOrder.value =
-        "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại giỏ hàng hoặc thông tin nhập.";
+    // Xử lý lỗi nếu có khi gọi API
+    console.error("Error placing order - Details:", err); // Log chi tiết lỗi để debug
+    placingOrder.value = false; // Tắt trạng thái xử lý
+    if (err.response) {
+      errorPlaceOrder.value = `Lỗi server: ${err.response.status} - ${err.response.data.message || 'Vui lòng thử lại.'}`;
+    } else if (err.message) {
+      errorPlaceOrder.value = err.message; // Hiển thị thông báo lỗi từ API
     } else {
       errorPlaceOrder.value = "Đã có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.";
     }
     window.scrollTo({ top: 0, behavior: "smooth" }); // Cuộn lên đầu trang để hiển thị lỗi
+  } finally {
+    placingOrder.value = false; // Đảm bảo trạng thái xử lý được tắt (dù thành công hay lỗi)
   }
 };
 

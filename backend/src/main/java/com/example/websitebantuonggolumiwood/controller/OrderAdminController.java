@@ -42,6 +42,7 @@ public class OrderAdminController {
         this.shippingMethodAdminRepository = shippingMethodAdminRepository;
     }
 
+    // Lấy danh sách đơn hàng, phan trang, sắp xếp, tìm kếm, tìm theo trạng thái, tìm theo ngày tạo
     @GetMapping
     public ResponseEntity<Page<OrderDetailAdminDTO>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -84,6 +85,7 @@ public class OrderAdminController {
         return ResponseEntity.ok(responsePage);
     }
 
+    // Lấy chi tiết đơn hàng theo ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Integer id) {
         Optional<OrderAdmin> optOrder = orderAdminRepository.findById(id);
@@ -116,6 +118,7 @@ public class OrderAdminController {
         }
     }
 
+    // Cập nhật trạng thái don hàng
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable Integer id,
@@ -199,6 +202,7 @@ public class OrderAdminController {
         return response;
     }
 
+    // DTO cho tạo đơn hàng
     private OrderItemAdminDTO mapToOrderItemResponse(OrderItemAdmin item) {
         OrderItemAdminDTO itemResponse = new OrderItemAdminDTO();
         itemResponse.setId(item.getId());

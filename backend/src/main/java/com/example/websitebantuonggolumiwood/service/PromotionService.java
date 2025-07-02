@@ -1,14 +1,12 @@
 package com.example.websitebantuonggolumiwood.service;
 
-import com.example.websitebantuonggolumiwood.entity.PromotionOrderHistory;
+import com.example.websitebantuonggolumiwood.entity.Promotion;
 import com.example.websitebantuonggolumiwood.entity.PromotionResponse;
 import com.example.websitebantuonggolumiwood.repository.PromotionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,13 +18,13 @@ public class PromotionService {
         this.promotionRepository = promotionRepository;
     }
 
-    public List<PromotionOrderHistory> getAllValidPromotions(String userRank) {
+    public List<Promotion> getAllValidPromotions(String userRank) {
         return promotionRepository.findValidPromotions(LocalDateTime.now(), userRank);
     }
 
     //button Áp dụng
     public PromotionResponse applyPromotion(String code, double subtotal) {
-        PromotionOrderHistory promo = promotionRepository.findByCodeAndIsActiveTrue(code.trim().toUpperCase())
+        Promotion promo = promotionRepository.findByCodeAndIsActiveTrue(code.trim().toUpperCase())
                 .orElse(null);
 
         if (promo == null) {
@@ -70,5 +68,21 @@ public class PromotionService {
                 "Áp dụng mã " + promo.getCode() + " thành công!",
                 discountAmount,
                 promo.getCode());
+    }
+
+    /**
+     * Ghi nhận việc sử dụng mã khuyến mãi và cập nhật số lần sử dụng
+     * @param promotionId ID của mã khuyến mãi
+     * @throws RuntimeException Nếu không tìm thấy mã khuyến mãi hoặc lỗi khi cập nhật
+     */
+    public void recordPromotionUsage(Integer promotionId) {
+        Promotion promo = promotionRepository.findById(promotionId)
+                .orElseThrow(() -> new RuntimeException("Mã khuyến mãi với ID " + promotionId + " không tồn tại"));
+
+        // Tăng số lần sử dụng hiện tại lên 1
+        promo.setCurrentUsage(promo.getCurrentUsage() != null ? promo.getCurrentUsage() + 1 : 1);
+
+        // Lưu lại thay đổi vào cơ sở dữ liệu
+        promotionRepository.save(promo);
     }
 }

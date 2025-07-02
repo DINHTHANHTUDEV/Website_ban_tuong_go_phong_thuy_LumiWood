@@ -78,7 +78,7 @@ public class OrderService {
                     // Nếu product không null thì mới set tên và ảnh
                     if (item.getProduct() != null) {
                         itemDto.setProductName(item.getProduct().getName());
-                        itemDto.setProductImage(item.getProduct().getImageUrl());
+                        itemDto.setProductImage(item.getProduct().getImage_url());
                     }
 
                     return itemDto;

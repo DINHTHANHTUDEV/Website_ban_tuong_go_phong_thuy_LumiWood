@@ -15,6 +15,7 @@ public class OrderSummaryDTO {
     private BigDecimal finalAmount; // Tổng tiền cuối cùng
     private String paymentMethod;
     private String successMessage; // Thông báo thành công
-    // Thêm các thông tin khác nếu cần (URL thanh toán online, mã đơn hàng...)
+    private BigDecimal depositAmount; // Số tiền đặt cọc (30% nếu totalAmount ≥ 10 triệu)
+    private String depositStatus; // Trạng thái đặt cọc (ví dụ: PENDING, PAID)
     private String paymentUrl; // Nếu thanh toán online
 }

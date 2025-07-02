@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CategoriesEntity {
+public class Category {
 
 
     @Id
@@ -34,6 +34,6 @@ public class CategoriesEntity {
     private LocalDateTime updated_at;
     @OneToMany(mappedBy = "category")
     @JsonIgnore // tránh vòng lặp
-    private List<ProductsEntity> products;
+    private List<Product> products;
 }
 

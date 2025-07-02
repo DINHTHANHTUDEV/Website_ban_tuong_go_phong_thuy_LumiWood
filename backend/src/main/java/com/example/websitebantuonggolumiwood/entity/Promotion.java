@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "Promotions")
-public class PromotionOrderHistory {
+public class Promotion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
