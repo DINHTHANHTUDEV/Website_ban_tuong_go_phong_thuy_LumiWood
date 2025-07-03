@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +24,8 @@ import java.io.IOException;
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsServiceImpl userDetailsService;
@@ -47,17 +51,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // Lấy token JWT từ header Authorization (nếu có)
             String jwt = getJwtFromRequest(request);
-            System.out.println("JWT token: " + jwt);
+            logger.debug("🪪 JWT token từ header: {}", jwt);
 
             // Nếu token tồn tại và hợp lệ
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 // Lấy userId từ token (được lưu trong subject của JWT)
                 Long userId = tokenProvider.getUserIdFromJWT(jwt);
-                System.out.println("UserId from token: " + userId);
+                logger.info("✅ Token hợp lệ - userId trích xuất: {}", userId);
 
                 // Tải thông tin user từ DB theo userId
                 UserDetails userDetails = userDetailsService.loadUserById(userId);
-                System.out.println("Loaded UserDetails username: " + userDetails.getUsername());
+                logger.debug("🔐 Đã load UserDetails từ DB - username: {}", userDetails.getUsername());
 
                 // Tạo Authentication dựa trên userDetails (bao gồm roles, quyền hạn)
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -69,10 +73,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Đặt Authentication vào SecurityContext để các phần tiếp theo của Spring Security
                 // biết user này đã được xác thực thành công
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                logger.debug("✅ Đã đặt Authentication vào SecurityContext cho userId: {}", userId);
+            } else {
+                logger.warn("❌ Token không hợp lệ hoặc không có token trong request");
             }
         } catch (Exception ex) {
-            // Nếu xảy ra lỗi (token không hợp lệ, user không tồn tại,...)
-            // Trả về lỗi 401 Unauthorized với thông báo lỗi
+            logger.error("❗ Lỗi khi xử lý xác thực JWT: {}", ex.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
             return; // kết thúc filter chain, không cho tiếp tục request
         }
@@ -89,12 +96,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
-        // Kiểm tra header có giá trị và bắt đầu bằng "Bearer "
+        logger.trace("📥 Header Authorization: {}", bearer);
         if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
-            // Cắt bỏ phần "Bearer " trả về token thuần túy
             return bearer.substring(7);
         }
-        // Không có token hợp lệ
         return null;
     }
 }

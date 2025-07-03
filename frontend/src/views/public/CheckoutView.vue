@@ -150,6 +150,8 @@
               </div>
             </div>
           </div>
+
+
           <!-- phương thức thanh toán -->
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
@@ -210,6 +212,8 @@
               </div>
             </div>
           </div>
+
+
           <!-- ghi chú đơn hàng -->
           <div class="card shadow-sm">
             <div class="card-header bg-light">
@@ -648,6 +652,12 @@ const handlePlaceOrder = async () => {
 
   placingOrder.value = true; // Bật trạng thái đang xử lý đặt hàng
 
+  // ⚠️ Nếu tổng đơn hàng ≥ 10 triệu, ép payment method là BANK_TRANSFER
+  if (finalTotal.value >= 10000000) {
+    selectedPaymentMethod.value = "BANK_TRANSFER";
+    console.log("✅ Đơn hàng ≥ 10 triệu → Ép paymentMethod = BANK_TRANSFER");
+  }
+
   // Chuẩn bị payload để gửi đến API backend
   const orderPayload = {
     shippingMethodId: selectedShippingMethodId.value, // ID phương thức vận chuyển được chọn
@@ -688,6 +698,7 @@ const handlePlaceOrder = async () => {
   }
 
   console.log("Placing order with payload:", JSON.stringify(orderPayload, null, 2)); // Log payload để debug
+  console.log("💳 Phương thức thanh toán đã chọn:", selectedPaymentMethod.value);
 
   try {
     const orderSummary = await placeOrder(orderPayload); // Gọi API để đặt hàng và lưu vào database
@@ -718,6 +729,8 @@ const handlePlaceOrder = async () => {
   } finally {
     placingOrder.value = false; // Đảm bảo trạng thái xử lý được tắt (dù thành công hay lỗi)
   }
+  
+
 };
 
 onMounted(async () => {
@@ -757,15 +770,23 @@ onMounted(async () => {
   // Đặt phương thức thanh toán mặc định khi load trang
   if (finalTotal >= 10000000) {
     selectedPaymentMethod.value = "BANK_TRANSFER"; // Chọn Chuyển khoản nếu cần đặt cọc
+    console.log("✅ Đơn hàng >= 10 triệu, chọn mặc định: BANK_TRANSFER");
+  } else {
+    selectedPaymentMethod.value = "COD"; // Khôi phục COD nếu dưới 10 triệu
+    console.log("✅ Đơn hàng < 10 triệu, chọn mặc định: COD");
   }
+
+  console.log("🎯 Phương thức thanh toán hiện tại:", selectedPaymentMethod.value);
 });
 
 // Theo dõi sự thay đổi của finalTotal để đặt phương thức thanh toán mặc định
 watch(() => finalTotal, (newTotal) => {
   if (newTotal >= 10000000) {
     selectedPaymentMethod.value = "BANK_TRANSFER"; // Chọn Chuyển khoản nếu cần đặt cọc
+    console.log("💳 Cập nhật: BANK_TRANSFER do tổng >= 10 triệu");
   } else {
     selectedPaymentMethod.value = "COD"; // Khôi phục COD nếu dưới 10 triệu
+    console.log("💵 Cập nhật: COD do tổng < 10 triệu");
   }
 });
 </script>

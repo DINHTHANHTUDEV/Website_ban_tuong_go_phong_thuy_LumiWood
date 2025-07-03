@@ -1,13 +1,6 @@
 package com.example.websitebantuonggolumiwood.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,8 +22,9 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
-    private Integer userId;
+    @ManyToOne(fetch = FetchType.LAZY) // User có thể null cho guest
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "session_id")
     private String sessionId;
@@ -41,6 +35,18 @@ public class Cart {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL,fetch = FetchType.LAZY, orphanRemoval = true)
     private List<CartItem> items = new ArrayList<>();
+
+    // Helper method để thêm item, đảm bảo tính nhất quán 2 chiều
+    public void addCartItem(CartItem item) {
+        items.add(item);
+        item.setCart(this);
+    }
+
+    // Helper method để xóa item
+    public void removeCartItem(CartItem item) {
+        items.remove(item);
+        item.setCart(null); // Hoặc không cần nếu dùng orphanRemoval
+    }
 }

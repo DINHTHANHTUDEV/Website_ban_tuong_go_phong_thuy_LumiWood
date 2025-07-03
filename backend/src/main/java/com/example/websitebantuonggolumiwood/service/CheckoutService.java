@@ -107,12 +107,12 @@ public class CheckoutService {
             logger.debug("Using sessionId from header: {}", sessionId);
 
             // 3. Lấy giỏ hàng hiện tại từ CartService với cart_id mới nhất
-            // Sử dụng userId hoặc sessionId để đảm bảo lấy đúng Cart mới nhất
-            Cart cart = cartService.getOrCreateCart(user != null ? user.getUserId().intValue() : null, sessionId);
+// Sử dụng user hoặc sessionId để đảm bảo lấy đúng Cart mới nhất
+            Cart cart = cartService.getOrCreateCart(user, sessionId); // Truyền user thay vì user.getUserId()
             logger.debug("Using cart_id: {} for order processing", cart.getId());
 
             // 4. Lấy danh sách CartItem từ repository để đảm bảo đồng bộ
-            List<CartItem> cartItems = itemRepo.findByCartId(cart.getId());
+            List<CartItem> cartItems = itemRepo.findByCart_Id(cart.getId());
             if (cartItems.isEmpty()) {
                 throw new BadRequestException("Giỏ hàng trống, không thể đặt hàng.");
             }
@@ -127,7 +127,7 @@ public class CheckoutService {
             BigDecimal shippingFee = shippingMethod.getBaseCost();
 
             // 7. Tính tổng tiền sản phẩm
-            BigDecimal subTotal = cartService.calculateSubtotalForCart(user != null ? user.getUserId().intValue() : null, sessionId);
+            BigDecimal subTotal = cartService.calculateSubtotalForCart(user, sessionId); // Truyền user thay vì user.getUserId()
             logger.debug("Subtotal calculated: {}", subTotal);
 
             // 8. Áp dụng mã khuyến mãi nếu có
@@ -197,13 +197,12 @@ public class CheckoutService {
 
             // 16. Xóa giỏ hàng sau khi đặt thành công
             try {
-                cartService.clearCart(user != null ? user.getUserId().intValue() : null, sessionId);
+                cartService.clearCart(user, sessionId); // Truyền user thay vì user.getUserId()
                 logger.debug("Cart cleared successfully");
             } catch (Exception e) {
                 logger.error("Error clearing cart: {}", e.getMessage());
                 // Không throw lỗi ở đây vì đơn hàng đã được tạo thành công
             }
-
             // 17. Trả về thông tin đơn hàng
             return OrderSummaryDTO.builder()
                     .orderId(savedOrder.getId())

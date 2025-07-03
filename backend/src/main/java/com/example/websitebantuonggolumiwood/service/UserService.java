@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * Service xử lý nghiệp vụ liên quan đến User
  */
@@ -39,6 +41,12 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+
 
     // Bạn có thể thêm các method như updateUser, findByUsername, ...
 

@@ -187,15 +187,19 @@
 //   });
 // };
 
-import axios from 'axios';
+// ✅ Sử dụng apiClient có interceptor token thay vì axios gốc
+import apiClient from '@/http/axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/cart';
+// Không cần ghi thêm /api/cart vì baseURL đã có sẵn trong apiClient
+const API_BASE_PATH = '/api/cart';
 
+// ✅ Lấy userId từ localStorage
 const getUserId = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   return user?.id || null;
 };
 
+// ✅ Lấy hoặc tạo mới sessionId cho khách
 const getSessionId = () => {
   let sessionId = localStorage.getItem("guestSessionId");
   if (!sessionId) {
@@ -205,41 +209,48 @@ const getSessionId = () => {
   return sessionId;
 };
 
+// ✅ Gộp params userId + sessionId cho mọi API
 const getParams = () => ({
   userId: getUserId(),
   sessionId: getSessionId()
 });
 
+// ✅ Gọi API lấy giỏ hàng
 export const getCart = () => {
-  return axios.get(API_BASE_URL, { params: getParams() });
+  return apiClient.get(API_BASE_PATH, { params: getParams() });
 };
 
+// ✅ Gọi API thêm sản phẩm vào giỏ
 export const addItemToCart = (itemData) => {
-  return axios.post(`${API_BASE_URL}/add`, itemData, {
+  return apiClient.post(`${API_BASE_PATH}/add`, itemData, {
     params: getParams()
   });
 };
 
+// ✅ Gọi API cập nhật số lượng
 export const updateCartItemQuantity = (productId, quantity) => {
-  return axios.put(`${API_BASE_URL}/update`, { productId, quantity }, {
+  return apiClient.put(`${API_BASE_PATH}/update`, { productId, quantity }, {
     params: getParams()
   });
 };
 
+// ✅ Gọi API xóa sản phẩm khỏi giỏ
 export const removeCartItem = (productId) => {
-  return axios.delete(`${API_BASE_URL}/remove/${productId}`, {
+  return apiClient.delete(`${API_BASE_PATH}/remove/${productId}`, {
     params: getParams()
   });
 };
 
+// ✅ Gọi API xóa toàn bộ giỏ hàng
 export const clearServerCart = () => {
-  return axios.delete(`${API_BASE_URL}/clear`, {
+  return apiClient.delete(`${API_BASE_PATH}/clear`, {
     params: getParams()
   });
 };
 
+// ✅ Gọi API gộp giỏ hàng guest với giỏ đã đăng nhập
 export const mergeGuestCart = () => {
-  return axios.post(`${API_BASE_URL}/merge`, {
+  return apiClient.post(`${API_BASE_PATH}/merge`, {
     sessionId: getSessionId()
   }, {
     params: {
