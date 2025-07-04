@@ -2,7 +2,12 @@ package com.example.websitebantuonggolumiwood.service;
 
 import com.example.websitebantuonggolumiwood.entity.Promotion;
 import com.example.websitebantuonggolumiwood.entity.PromotionResponse;
+import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.repository.PromotionRepository;
+import com.example.websitebantuonggolumiwood.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,13 +19,24 @@ import java.util.List;
 public class PromotionService {
     private final PromotionRepository promotionRepository;
 
-    public PromotionService(PromotionRepository promotionRepository) {
+    public PromotionService(PromotionRepository promotionRepository, UserRepository userRepository) {
         this.promotionRepository = promotionRepository;
+        this.userRepository = userRepository;
+    }
+    private final UserRepository userRepository;
+
+    public List<Promotion> getAllValidPromotionsForLoggedInUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        String userTier = user.getTier();
+
+        return promotionRepository.findValidPromotions(LocalDateTime.now(), userTier);
     }
 
-    public List<Promotion> getAllValidPromotions(String userRank) {
-        return promotionRepository.findValidPromotions(LocalDateTime.now(), userRank);
-    }
 
     //button Áp dụng
     public PromotionResponse applyPromotion(String code, double subtotal) {

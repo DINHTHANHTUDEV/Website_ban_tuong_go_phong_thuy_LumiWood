@@ -21,7 +21,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
             "AND (p.maxUsage IS NULL OR p.currentUsage < p.maxUsage)")
     List<Promotion> findValidPromotions(@Param("now") LocalDateTime now,
                                         @Param("rank") String rank);
-
     /**
      * Tìm mã khuyến mãi dựa trên mã code không phân biệt chữ hoa/thường và kiểm tra trạng thái hoạt động
      * @param code Mã khuyến mãi cần tìm

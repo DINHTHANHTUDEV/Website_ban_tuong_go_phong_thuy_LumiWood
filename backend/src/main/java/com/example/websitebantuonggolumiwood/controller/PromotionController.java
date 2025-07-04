@@ -19,9 +19,12 @@ public class PromotionController {
 
 
     @GetMapping("/hienthi")
-    public List<Promotion> getPromotionOrderHistory(@RequestParam String userRank) {
-        return promotionService.getAllValidPromotions(userRank);
+    public ResponseEntity<List<Promotion>> hienThiKhuyenMaiTheoUser() {
+        List<Promotion> promotions = promotionService.getAllValidPromotionsForLoggedInUser();
+        return ResponseEntity.ok(promotions);
     }
+
+
     @PostMapping("/apply")
     public ResponseEntity<PromotionResponse> applyPromotion(
             @RequestParam String code,
