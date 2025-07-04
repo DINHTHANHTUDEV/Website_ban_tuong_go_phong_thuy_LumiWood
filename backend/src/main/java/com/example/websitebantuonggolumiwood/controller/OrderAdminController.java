@@ -6,6 +6,7 @@ import com.example.websitebantuonggolumiwood.entity.OrderAdmin;
 import com.example.websitebantuonggolumiwood.entity.OrderItemAdmin;
 import com.example.websitebantuonggolumiwood.entity.ShippingMethod;
 import com.example.websitebantuonggolumiwood.repository.OrderAdminRepository;
+import com.example.websitebantuonggolumiwood.repository.ProductRepository;
 import com.example.websitebantuonggolumiwood.repository.ShippingMethodAdminRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,10 +37,12 @@ public class OrderAdminController {
 
     private final OrderAdminRepository orderAdminRepository;
     private final ShippingMethodAdminRepository shippingMethodAdminRepository;
+    private final ProductRepository productRepository;
 
-    public OrderAdminController(OrderAdminRepository orderAdminRepository, ShippingMethodAdminRepository shippingMethodAdminRepository) {
+    public OrderAdminController(OrderAdminRepository orderAdminRepository, ShippingMethodAdminRepository shippingMethodAdminRepository, ProductRepository productRepository) {
         this.orderAdminRepository = orderAdminRepository;
         this.shippingMethodAdminRepository = shippingMethodAdminRepository;
+        this.productRepository = productRepository;
     }
 
     // Lấy danh sách đơn hàng, phan trang, sắp xếp, tìm kếm, tìm theo trạng thái, tìm theo ngày tạo
@@ -88,7 +91,7 @@ public class OrderAdminController {
     // Lấy chi tiết đơn hàng theo ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Integer id) {
-        Optional<OrderAdmin> optOrder = orderAdminRepository.findById(id);
+        Optional<OrderAdmin> optOrder = orderAdminRepository.findByIdWithShippingMethod(id);
         if (optOrder.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Đơn hàng không tồn tại");
         }
@@ -135,7 +138,7 @@ public class OrderAdminController {
             return ResponseEntity.badRequest().body("Cần cung cấp lý do hủy đơn hàng");
         }
 
-        Optional<OrderAdmin> optOrder = orderAdminRepository.findById(id);
+        Optional<OrderAdmin> optOrder = orderAdminRepository.findByIdWithShippingMethod(id);
         if (optOrder.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Đơn hàng không tồn tại");
         }
@@ -183,9 +186,8 @@ public class OrderAdminController {
         response.setShippingMethodId(order.getShippingMethodId());
         response.setShippingCost(order.getShippingCost());
 
-        if (order.getShippingMethodId() != null) {
-            Optional<ShippingMethod> shippingMethodOpt = shippingMethodAdminRepository.findById(order.getShippingMethodId());
-            response.setShippingMethodName(shippingMethodOpt.map(ShippingMethod::getName).orElse("N/A"));
+        if (order.getShippingMethod() != null) {
+            response.setShippingMethodName(order.getShippingMethod().getName());
         } else {
             response.setShippingMethodName("N/A");
         }
@@ -209,6 +211,14 @@ public class OrderAdminController {
         itemResponse.setProductId(item.getProductId());
         itemResponse.setQuantity(item.getQuantity());
         itemResponse.setPriceAtPurchase(item.getPriceAtPurchase());
+
+        // Thêm phần này để lấy ảnh và tên
+        productRepository.findById(item.getProductId()).ifPresent(product -> {
+            itemResponse.setProductName(product.getName());
+            itemResponse.setProductImageUrl(product.getImage_url());
+        });
+
         return itemResponse;
     }
+
 }

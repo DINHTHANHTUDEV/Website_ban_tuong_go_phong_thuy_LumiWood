@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface OrderAdminRepository extends JpaRepository<OrderAdmin, Integer> {
 
+    // Native query: Lọc danh sách đơn hàng có phân trang, tìm kiếm
     @Query(value = """
         SELECT * FROM orders o
         WHERE (:keyword IS NULL OR 
@@ -41,4 +43,10 @@ public interface OrderAdminRepository extends JpaRepository<OrderAdmin, Integer>
             Pageable pageable
     );
 
+    @Query("""
+    SELECT o FROM OrderAdmin o
+    LEFT JOIN FETCH o.shippingMethod
+    WHERE o.id = :id
+""")
+    Optional<OrderAdmin> findByIdWithShippingMethod(@Param("id") Integer id);
 }

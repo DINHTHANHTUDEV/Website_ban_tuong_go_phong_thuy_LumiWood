@@ -19,4 +19,7 @@ public class OrderItemAdminDTO {
     private Integer productId;
     private Integer quantity;
     private BigDecimal priceAtPurchase;
+    private String productImageUrl;
+    private String productName; // nếu muốn hiển thị tên
+
 }

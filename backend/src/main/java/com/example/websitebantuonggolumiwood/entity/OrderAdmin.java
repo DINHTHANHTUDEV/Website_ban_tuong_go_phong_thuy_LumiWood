@@ -7,6 +7,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -84,8 +86,12 @@ public class OrderAdmin {
     @Column(name = "shipping_city", length = 100)
     private String shippingCity;
 
-    @Column(name = "shipping_method_id")
+    @Column(name = "shipping_method_id") // ánh xạ ID
     private Integer shippingMethodId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_method_id", insertable = false, updatable = false) // ánh xạ đối tượng
+    private ShippingMethod shippingMethod;
 
     @Column(name = "shipping_cost", precision = 18, scale = 2)
     private BigDecimal shippingCost;

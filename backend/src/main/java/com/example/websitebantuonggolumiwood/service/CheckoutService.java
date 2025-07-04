@@ -161,6 +161,9 @@ public class CheckoutService {
             order.setUser(user);
             order.setTotalAmount(totalAmount);
             order.setShippingMethod(shippingMethod);
+
+            order.setShippingMethodId(shippingMethod.getId()); // KHÔNG lỗi nữa ✅
+
             order.setShippingCost(shippingFee);
             order.setPaymentMethod(request.getPaymentMethod());
             order.setStatus("PENDING");

@@ -92,4 +92,7 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "promotion_id", insertable = false, updatable = false)
     private Promotion promotion;
+
+    @Column(name = "shipping_method_id")
+    private Integer shippingMethodId;
 }

@@ -104,9 +104,49 @@
                 </li>
               </ul>
             </div>
-            <div class="card-footer bg-light d-flex justify-content-between fw-bold fs-5">
-              <span>Tổng cộng:</span>
-              <span class="text-danger">{{ formatCurrency(order.totalAmount) }}</span>
+            <div class="card-footer bg-light">
+              <!-- Tạm tính -->
+              <div class="d-flex justify-content-between fw-bold fs-6">
+                <span>Tạm tính:</span>
+                <span>{{ formatCurrency(order.totalAmount + (order.discountAmount || 0) - (order.shippingCost || 0)) }}</span>
+              </div>
+
+              <!-- Phí vận chuyển -->
+              <div v-if="order.shippingCost && order.shippingCost > 0" class="d-flex justify-content-between fw-bold fs-6">
+                <span>Phí vận chuyển:</span>
+                <span>{{ formatCurrency(order.shippingCost) }}</span>
+              </div>
+
+              <!-- Giảm giá -->
+              <div v-if="order.discountAmount && order.discountAmount > 0" class="d-flex justify-content-between text-success fw-bold fs-6">
+                <span>Giảm giá:</span>
+                <span>- {{ formatCurrency(order.discountAmount) }}</span>
+              </div>
+
+              <!-- Tổng cộng -->
+              <div class="d-flex justify-content-between text-danger fw-bold fs-5 mt-2 pt-2 border-top">
+                <span>Tổng cộng:</span>
+                <span>{{ formatCurrency(order.totalAmount) }}</span>
+              </div>
+
+              <!-- Lưu ý khi có đặt cọc -->
+              <div v-if="order.depositAmount && order.depositAmount > 0" class="text-danger fw-semibold mt-3">
+                <div class="small fst-italic">
+                  🔔 <strong>Lưu ý:</strong> Với đơn hàng có giá trị trên 10.000.000 VNĐ, Quý khách vui lòng đặt cọc 30% giá trị đơn hàng để xác nhận đặt mua. Số tiền còn lại sẽ được thanh toán sau khi nhận hàng.
+                </div>
+              </div>
+
+              <!-- Đặt cọc -->
+              <div v-if="order.depositAmount && order.depositAmount > 0" class="d-flex justify-content-between text-danger fw-bold fs-6 mt-2">
+                <span>Đặt cọc (30%):</span>
+                <span>{{ formatCurrency(order.depositAmount) }}</span>
+              </div>
+
+              <!-- Phần còn lại -->
+              <div v-if="order.depositAmount && order.depositAmount > 0" class="d-flex justify-content-between text-danger fw-bold fs-6">
+                <span>Phần còn lại (70%):</span>
+                <span>{{ formatCurrency(order.totalAmount - order.depositAmount) }}</span>
+              </div>
             </div>
           </div>
 
