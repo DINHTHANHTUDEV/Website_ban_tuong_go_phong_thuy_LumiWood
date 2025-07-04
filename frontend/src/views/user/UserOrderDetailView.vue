@@ -124,30 +124,41 @@
             </div>
             <!-- Order Summary Footer -->
             <div class="card-footer bg-light">
-              <ul class="list-unstyled mb-0 small">
-                <li class="d-flex justify-content-between">
-                  <span>Tạm tính:</span>
-                  <span>{{ formatCurrency(order.subtotal) }}</span>
-                </li>
-                <li class="d-flex justify-content-between">
-                  <span>Phí vận chuyển:</span>
-                  <span>{{ formatCurrency(order.shippingCost) }}</span>
-                </li>
-                <li
-                  v-if="order.discountAmount > 0"
-                  class="d-flex justify-content-between text-success"
-                >
-                  <span>Giảm giá ({{ order.promotionCode || "KM" }}):</span>
-                  <span>- {{ formatCurrency(order.discountAmount) }}</span>
-                </li>
-                <li class="d-flex justify-content-between fw-bold fs-6 border-top pt-2 mt-2">
-                  <span>Tổng cộng:</span>
-                  <span class="text-danger">{{ formatCurrency(order.totalAmount) }}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
 
+            <ul class="list-unstyled mb-0 small">
+              <li class="d-flex justify-content-between">
+                <span>Tạm tính:</span>
+                <span>{{ formatCurrency(order.subtotal) }}</span>
+              </li>
+              <li class="d-flex justify-content-between">
+                <span>Phí vận chuyển:</span>
+                <span>{{ formatCurrency(order.shippingCost) }}</span>
+              </li>
+              <li
+                v-if="order.discountAmount > 0"
+                class="d-flex justify-content-between text-success"
+              >
+                <span>Giảm giá ({{ order.promotionCode || "KM" }}):</span>
+                <span>- {{ formatCurrency(order.discountAmount) }}</span>
+              </li>
+
+              <!-- 👇 Đặt cọc và còn lại 👇 -->
+              <li v-if="order.depositAmount" class="d-flex justify-content-between text-warning">
+                <span>Đặt cọc (30%):</span>
+                <span>{{ formatCurrency(order.depositAmount) }}</span>
+              </li>
+              <li v-if="order.remainingAmount" class="d-flex justify-content-between text-primary">
+                <span>Còn lại (70%):</span>
+                <span>{{ formatCurrency(order.remainingAmount) }}</span>
+              </li>
+
+              <li class="d-flex justify-content-between fw-bold fs-6 border-top pt-2 mt-2">
+                <span>Tổng cộng:</span>
+                <span class="text-danger">{{ formatCurrency(order.totalAmount) }}</span>
+              </li>
+            </ul>
+          </div>
+          </div>
           <!-- Add action buttons for user if needed (e.g., Re-order, Request Return) -->
           <!--
           <div class="card shadow-sm">
@@ -201,7 +212,6 @@ const fetchOrderDetail = async () => {
   errorCode.value = null;
   order.value = null;
   try {
-
     const response = await getUserOrderDetail(props.orderId);
     order.value = response.data;
   } catch (err) {
@@ -218,11 +228,9 @@ const fetchOrderDetail = async () => {
   }
 };
 
-
 const onImageError = (event) => {
   event.target.src = defaultImage;
 };
-
 
 watch(() => props.orderId, fetchOrderDetail, { immediate: true });
 </script>

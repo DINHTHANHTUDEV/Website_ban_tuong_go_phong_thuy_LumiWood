@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,45 +51,6 @@ public class OrderHistoryController {
         // Gọi service lấy danh sách đơn hàng theo userId với phân trang
         return orderService.getOrdersHistoryByUserId(userId, page, size);
     }
-//    // 1. Lấy danh sách đơn hàng có phân trang
-//    @GetMapping("/getOrdersHistory")
-//    public Page<OrderDto> getAllOrders(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "5") int size
-//    ) {
-//        Page<Order> ordersPage = orderRepository.findAll(PageRequest.of(page, size));
-//
-//        return ordersPage.map(order -> {
-//            OrderDto dto = new OrderDto();
-//            dto.setId(order.getId());
-//            dto.setCustomerName(order.getCustomerName());
-//            dto.setCustomerPhone(order.getCustomerPhone());
-//            dto.setCustomerAddress(order.getCustomerAddress());
-//            dto.setTotalAmount(order.getTotalAmount());
-//            dto.setStatus(order.getStatus());
-//            dto.setOrderDate(order.getOrderDate());
-//            dto.setPaymentMethod(order.getPaymentMethod());
-//
-//            List<OrderItemDto> itemDtos = order.getOrderItems().stream().map(item -> {
-//                OrderItemDto i = new OrderItemDto();
-//                i.setProductId(item.getProductId());
-//                i.setQuantity(item.getQuantity());
-//                i.setPriceAtPurchase(item.getPriceAtPurchase());
-//
-//                // Gán tên và hình sản phẩm
-//                if (item.getProduct() != null) {
-//                    i.setProductName(item.getProduct().getName());
-//                    i.setProductImage(item.getProduct().getImageUrl());
-//                }
-//
-//                return i;
-//            }).collect(Collectors.toList());
-//
-//            dto.setOrderItems(itemDtos);
-//            return dto;
-//        });
-//    }
-
 
     // 2. Lấy chi tiết đơn hàng theo ID
     @GetMapping("/getOrdersDetail/{id}")
@@ -129,7 +91,21 @@ public class OrderHistoryController {
 
         // Tổng tiền và chi tiết món hàng
         dto.setTotalAmount(order.getTotalAmount());
-        dto.setSubtotal(order.getTotalAmount().subtract(order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount()));
+        dto.setSubtotal(order.getTotalAmount().subtract(
+                order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount()
+        ));
+
+// 🔽 🔽 🔽 THÊM ĐOẠN NÀY SAU KHI SET SUBTOTAL
+        BigDecimal threshold = new BigDecimal("10000000");
+        if (dto.getSubtotal().compareTo(threshold) > 0) {
+            BigDecimal deposit = dto.getSubtotal().multiply(new BigDecimal("0.3"))
+                    .setScale(0, RoundingMode.HALF_UP);
+            BigDecimal remaining = dto.getSubtotal().subtract(deposit);
+
+            dto.setDepositAmount(deposit);
+            dto.setRemainingAmount(remaining);
+        }
+// 🔼 🔼 🔼 HẾT ĐOẠN CẦN THÊM
 
         List<UserOrderDetailDTO.OrderItemDTO> itemDTOs = order.getOrderItems().stream().map(item -> {
             UserOrderDetailDTO.OrderItemDTO itemDto = new UserOrderDetailDTO.OrderItemDTO();
@@ -149,7 +125,6 @@ public class OrderHistoryController {
 
         return ResponseEntity.ok(dto);
     }
-
 
 
 }
