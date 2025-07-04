@@ -26,7 +26,7 @@ public class OrderDetailAdminDTO {
     private LocalDateTime orderDate;
 
     private BigDecimal discountAmount;
-    private Integer userId;
+    private Long userId;
     private String guestEmail;
 
     private String shippingRecipientName;

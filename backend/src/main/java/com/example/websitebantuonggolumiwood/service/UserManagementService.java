@@ -9,13 +9,17 @@ import com.example.websitebantuonggolumiwood.repository.AddressRepository;
 import com.example.websitebantuonggolumiwood.repository.OrderRepository;
 import com.example.websitebantuonggolumiwood.repository.UserManagementRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +37,16 @@ public class UserManagementService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserManagementService.class);
+
+
+    // --- Ngưỡng chi tiêu cho các bậc ---
+    private static final BigDecimal BRONZE_TIER_THRESHOLD = BigDecimal.ZERO;                  // 0
+    private static final BigDecimal SILVER_TIER_THRESHOLD = new BigDecimal("10000000");       // 10 triệu
+    private static final BigDecimal GOLD_TIER_THRESHOLD = new BigDecimal("30000000");         // 30 triệu
+    private static final BigDecimal DIAMOND_TIER_THRESHOLD = new BigDecimal("100000000");     // 100 triệu
+
 
     /**
      * Lấy danh sách user với phân trang, filter theo tier, trạng thái isActive, tìm kiếm username hoặc fullName
@@ -204,27 +218,74 @@ public class UserManagementService {
     }
 
     /**
-     * Đặt đơn hàng mới với ghi chú cho user.
-     * @param userId ID của user.
-     * @param orderNoteDTO Thông tin ghi chú từ request.
-     * @return OrderNoteDTO của đơn hàng vừa đặt.
+     * Cập nhật tổng chi tiêu và bậc khách hàng (gọi khi đơn hàng hoàn tất thanh toán).
+     *
+     * @param userId      ID của khách hàng
+     * @param orderAmount Số tiền đơn hàng mới
      */
-//    public OrderNoteDTO placeOrder(Long userId, OrderNoteDTO orderNoteDTO) {
-//        User user = userManagementRepository.findById(userId)
-//                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user với ID: " + userId));
-//
-//        // Tạo đơn hàng mới
-//        Order order = new Order();
-//        order.setUser(user);
-//        order.setOrderNote(orderNoteDTO.getOrderNote());
-//
-//        // Lưu đơn hàng (giả định created_at và updated_at được tự động set trong entity hoặc database)
-//        Order savedOrder = orderRepository.save(order);
-//
-//        OrderNoteDTO result = new OrderNoteDTO();
-//        result.setOrderId(savedOrder.getId());
-//        result.setOrderNote(savedOrder.getOrderNote());
-//
-//        return result;
-//    }
+    @Transactional
+    public void updateTotalSpentAndTier(Long userId, BigDecimal orderAmount) {
+        if (userId == null || orderAmount == null || orderAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            logger.warn("Dữ liệu đầu vào không hợp lệ khi cập nhật tổng chi tiêu. userId: {}, amount: {}", userId, orderAmount);
+            return;
+        }
+
+        Optional<User> optionalUser = userManagementRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            logger.warn("Không tìm thấy user với ID: {}", userId);
+            return;
+        }
+
+        User user = optionalUser.get();
+
+        // Chỉ cập nhật cho user có vai trò là CUSTOMER
+        if (!"CUSTOMER".equalsIgnoreCase(user.getRole())) {
+            logger.warn("User ID {} không phải là CUSTOMER (role = {}), không cập nhật.", userId, user.getRole());
+            return;
+        }
+
+        // Cộng thêm số tiền của đơn hàng mới vào tổng chi tiêu hiện tại
+        BigDecimal currentTotal = user.getTotalSpent() != null ? user.getTotalSpent() : BigDecimal.ZERO;
+        BigDecimal newTotalSpent = currentTotal.add(orderAmount);
+        user.setTotalSpent(newTotalSpent);
+
+        logger.info("User ID {}: Tổng chi tiêu tăng từ {} → {}", userId, currentTotal, newTotalSpent);
+
+        // Tính toán bậc mới dựa trên tổng chi tiêu mới
+        String newTier = calculateCustomerTier(newTotalSpent);
+
+        // Nếu bậc mới khác bậc hiện tại thì cập nhật
+        if (!newTier.equalsIgnoreCase(user.getTier())) {
+            logger.info("User ID " + userId + " chuyển bậc từ " + user.getTier() + " sang " + newTier);
+            user.setTier(newTier);
+        }
+        else {
+            logger.debug("User ID {} vẫn giữ nguyên bậc {} sau khi cập nhật.", userId, newTier);
+        }
+
+        // Lưu lại thông tin user
+        userManagementRepository.save(user);
+        logger.debug("User ID {} đã được lưu với tổng chi tiêu mới: {} và bậc: {}", userId, newTotalSpent, user.getTier());
+    }
+
+    /**
+     * Tính toán bậc khách hàng dựa trên tổng chi tiêu.
+     * @param totalSpent Tổng số tiền đã chi tiêu.
+     * @return Mã bậc khách hàng (String).
+     */
+    private String calculateCustomerTier(BigDecimal totalSpent) {
+        if (totalSpent == null) {
+            return "BRONZE";
+        }
+
+        if (totalSpent.compareTo(DIAMOND_TIER_THRESHOLD) >= 0) {
+            return "DIAMOND";
+        } else if (totalSpent.compareTo(GOLD_TIER_THRESHOLD) >= 0) {
+            return "GOLD";
+        } else if (totalSpent.compareTo(SILVER_TIER_THRESHOLD) >= 0) {
+            return "SILVER";
+        } else {
+            return "BRONZE";
+        }
+    }
 }

@@ -57,7 +57,7 @@ public class OrderAdmin {
     private BigDecimal discountAmount;
 
     @Column(name = "user_id")
-    private Integer userId;
+    private Long userId;
 
     @Column(name = "guest_email", length = 255)
     private String guestEmail;

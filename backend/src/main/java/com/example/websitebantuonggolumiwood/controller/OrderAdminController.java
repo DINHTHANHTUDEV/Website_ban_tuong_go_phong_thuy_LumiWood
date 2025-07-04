@@ -8,6 +8,9 @@ import com.example.websitebantuonggolumiwood.entity.ShippingMethod;
 import com.example.websitebantuonggolumiwood.repository.OrderAdminRepository;
 import com.example.websitebantuonggolumiwood.repository.ProductRepository;
 import com.example.websitebantuonggolumiwood.repository.ShippingMethodAdminRepository;
+import com.example.websitebantuonggolumiwood.service.UserManagementService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -35,15 +39,22 @@ import java.util.stream.Collectors;
 //@CrossOrigin(origins = "http://localhost:5174")
 public class OrderAdminController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderAdminController.class);
+
+
+    private final UserManagementService userManagementService;
     private final OrderAdminRepository orderAdminRepository;
     private final ShippingMethodAdminRepository shippingMethodAdminRepository;
     private final ProductRepository productRepository;
 
-    public OrderAdminController(OrderAdminRepository orderAdminRepository, ShippingMethodAdminRepository shippingMethodAdminRepository, ProductRepository productRepository) {
+    public OrderAdminController(UserManagementService userManagementService, OrderAdminRepository orderAdminRepository, ShippingMethodAdminRepository shippingMethodAdminRepository, ProductRepository productRepository) {
+        this.userManagementService = userManagementService;
         this.orderAdminRepository = orderAdminRepository;
         this.shippingMethodAdminRepository = shippingMethodAdminRepository;
         this.productRepository = productRepository;
     }
+
+
 
     // Lấy danh sách đơn hàng, phan trang, sắp xếp, tìm kếm, tìm theo trạng thái, tìm theo ngày tạo
     @GetMapping
@@ -144,7 +155,10 @@ public class OrderAdminController {
         }
 
         OrderAdmin order = optOrder.get();
-        order.setStatus(newStatus);
+        String oldStatus = order.getStatus(); // lưu trạng thái cũ
+
+        // Cập nhật trạng thái mới
+        order.setStatus(newStatus.trim().toUpperCase());
 
         if ("CANCELLED".equalsIgnoreCase(newStatus)) {
             order.setCancelReason(cancelReason);
@@ -152,12 +166,38 @@ public class OrderAdminController {
             order.setCancelReason(null);
         }
 
+        // Lưu thay đổi vào DB
         orderAdminRepository.save(order);
+        logger.info("ADMIN cập nhật trạng thái đơn hàng ID {}: {} → {}", id, oldStatus, newStatus);
+
+        // === Cập nhật tổng chi tiêu và bậc khách hàng nếu đơn hàng hoàn tất ===
+        if ("COMPLETED".equalsIgnoreCase(newStatus) &&
+                (oldStatus == null || !"COMPLETED".equalsIgnoreCase(oldStatus))) {
+            Long userId = order.getUserId();
+            BigDecimal totalAmount = order.getTotalAmount();
+
+            if (userId != null && totalAmount != null) {
+                try {
+                    logger.info("Đơn hàng ID {} đã hoàn tất. Cập nhật tổng chi tiêu và bậc cho user ID: {}", id, userId);
+                    userManagementService.updateTotalSpentAndTier(userId, totalAmount);
+                } catch (Exception ex) {
+                    logger.error("Lỗi khi cập nhật tổng chi tiêu/bậc cho user ID {} sau khi hoàn tất đơn hàng ID {}: {}",
+                            userId, id, ex.getMessage(), ex);
+                    // Không throw để tránh rollback transaction đơn hàng
+                }
+            } else {
+                logger.warn("Không thể cập nhật tổng chi tiêu: userId hoặc totalAmount bị null (order ID: {})", id);
+            }
+        }
+        // ================================================================
 
         OrderDetailAdminDTO response = mapToOrderDetailResponse(order);
         return ResponseEntity.ok(response);
     }
 
+
+    //  chuyển đổi order thành orderDetailAdminDTO
+    // de xu ly du lieu tra ve cho frontend lay danh sach don hang cho admin
     private OrderDetailAdminDTO mapToOrderDetailResponse(OrderAdmin order) {
         List<OrderItemAdminDTO> itemResponses = order.getOrderItemAdmins().stream()
                 .map(this::mapToOrderItemResponse)
@@ -204,7 +244,8 @@ public class OrderAdminController {
         return response;
     }
 
-    // DTO cho tạo đơn hàng
+    // chuyển đổi orderItem thành orderItemAdminDTO
+    //de xu ly du lieu tra ve cho frontend lay chi tiet san phẩm trong đơn hàng
     private OrderItemAdminDTO mapToOrderItemResponse(OrderItemAdmin item) {
         OrderItemAdminDTO itemResponse = new OrderItemAdminDTO();
         itemResponse.setId(item.getId());
@@ -220,5 +261,8 @@ public class OrderAdminController {
 
         return itemResponse;
     }
+
+
+
 
 }
