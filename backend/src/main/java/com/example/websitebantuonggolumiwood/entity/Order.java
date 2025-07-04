@@ -95,4 +95,8 @@ public class Order {
 
     @Column(name = "shipping_method_id")
     private Integer shippingMethodId;
+
+
+    @Column(name = "promotion_id")
+    private Integer promotionId;
 }

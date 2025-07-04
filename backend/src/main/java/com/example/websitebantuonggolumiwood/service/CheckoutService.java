@@ -163,7 +163,9 @@ public class CheckoutService {
             order.setShippingMethod(shippingMethod);
 
             order.setShippingMethodId(shippingMethod.getId()); // KHÔNG lỗi nữa ✅
-
+            logger.debug("phuong thuc van chuyen: {}", shippingMethod.getId());
+            order.setPromotionId(promoDetails != null && promoDetails.getPromotion() != null ? promoDetails.getPromotion().getId() : null);
+            logger.debug("khuyen mai: {}", promoDetails != null && promoDetails.getPromotion() != null ? promoDetails.getPromotion().getId() : "none");
             order.setShippingCost(shippingFee);
             order.setPaymentMethod(request.getPaymentMethod());
             order.setStatus("PENDING");
