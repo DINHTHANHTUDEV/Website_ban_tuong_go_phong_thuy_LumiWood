@@ -32,6 +32,9 @@ public class UserOrderDetailDTO {
     private BigDecimal subtotal;
     private BigDecimal totalAmount;
 
+    private BigDecimal depositAmount;     // 30%
+    private BigDecimal remainingAmount;   // 70%
+
     private List<OrderItemDTO> items;
 
     @Data
