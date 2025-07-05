@@ -153,13 +153,16 @@
 // };
 import axios from "axios";
 
-export async function availablePromotions(userRank) {
+export async function availablePromotions() {
+  const token = localStorage.getItem("token"); // hoặc từ Vuex/Pinia nếu bạn dùng
+
   return axios.get("http://localhost:8080/api/promotion/hienthi", {
-    params: {
-      userRank: userRank
-    }
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
+
 
 export function applyPromotionCode(code, subtotal) {
   return axios.post("http://localhost:8080/api/promotion/apply", null, {

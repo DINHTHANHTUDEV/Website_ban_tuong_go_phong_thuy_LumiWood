@@ -197,9 +197,12 @@
                       :disabled="applyingPromotion || !!appliedPromotion || cartStore.isLoading"
                     >
                       <option value="" disabled>-- Chọn mã khuyến mãi --</option>
-                      <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
+                      <!-- <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
                         {{ promo.label }} {{ promo.code }}
-                      </option>
+                      </option> -->
+                      <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
+  ({{ promo.code }})
+</option>
                     </select>
                   <button
                     class="btn btn-secondary"
@@ -300,11 +303,7 @@ const availablePromotions = ref([]);
 
 onMounted(async () => {
   try {
-    // Giả sử bạn lưu user trong localStorage khi login
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userRank = user?.rank || "Bronze"; // hoặc rank mặc định
-
-    const res = await fetchAvailablePromotions(userRank); // ✅ Truyền userRank vào
+    const res = await fetchAvailablePromotions(); // không cần truyền userRank nữa
     availablePromotions.value = res.data;
   } catch (err) {
     console.error("Lỗi khi gọi API khuyến mãi", err);
