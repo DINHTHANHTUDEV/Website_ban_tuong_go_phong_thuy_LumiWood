@@ -8,8 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    // lay don hang gan nhat theo user
+     Optional<Order> findTopByUserOrderByOrderDateDesc(User user) ;
+
+
     // Lấy 5 đơn hàng gần nhất theo user, order theo ngày giảm dần
     List<Order> findTop5ByUserOrderByOrderDateDesc(User user);
 

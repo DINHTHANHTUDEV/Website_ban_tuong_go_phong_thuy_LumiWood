@@ -18,14 +18,16 @@ import java.util.List;
 @Service
 public class PromotionService {
     private final PromotionRepository promotionRepository;
-
-    public PromotionService(PromotionRepository promotionRepository, UserRepository userRepository) {
+    private final UserRepository userRepository;
+    private  final CartService cartService;
+    public PromotionService(PromotionRepository promotionRepository, UserRepository userRepository, CartService cartService) {
         this.promotionRepository = promotionRepository;
         this.userRepository = userRepository;
+        this.cartService = cartService;
     }
-    private final UserRepository userRepository;
 
-    public List<Promotion> getAllValidPromotionsForLoggedInUser() {
+
+    public List<Promotion> getAllValidPromotionsForLoggedInUser(String sessionID) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -34,7 +36,31 @@ public class PromotionService {
 
         String userTier = user.getTier();
 
-        return promotionRepository.findValidPromotions(LocalDateTime.now(), userTier);
+        // goi Cartservice de lay tong  tien trong gio hang
+        BigDecimal orderTotal = cartService.calculateSubtotalForCart(user,sessionID);
+        List<Promotion> promotions = promotionRepository.findValidPromotions(LocalDateTime.now(), userTier);
+
+        // Sap xep hien thi giam gia
+        return promotions.stream()
+                .sorted((p1,p2)->{
+                    BigDecimal pro1 = calculateBenefit(p1, orderTotal);
+                    BigDecimal pro2 = calculateBenefit(p2, orderTotal);
+                    return pro2.compareTo(pro1);
+                        })
+                .toList();
+
+
+//        return promotionRepository.findValidPromotions(LocalDateTime.now(), userTier);
+    }
+
+    // Tao ham tinh gia tri giam gia de sap xep
+    private  BigDecimal calculateBenefit(Promotion promotion, BigDecimal orderTotal){
+        if("FIXED_AMOUNT".equalsIgnoreCase(promotion.getDiscountType())){
+            return  promotion.getDiscountValue();
+        } else if ("PERCENTAGE".equalsIgnoreCase(promotion.getDiscountType())) {
+            return orderTotal.multiply(promotion.getDiscountValue()).divide(BigDecimal.valueOf(100));
+        }
+        return BigDecimal.ZERO;
     }
 
 

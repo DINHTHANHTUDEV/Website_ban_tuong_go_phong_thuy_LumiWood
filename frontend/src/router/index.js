@@ -30,6 +30,8 @@ import AdminShippingMethodFormView from '../views/admin/AdminShippingMethodFormV
 import AdminPromotionListView from '../views/admin/AdminPromotionListView.vue';
 import AdminPromotionFormView from '../views/admin/AdminPromotionFormView.vue';
 import AdminLayout from '../components/layout/AdminLayout.vue';
+// thêm POS ( bán hàng tại cửa hàng )
+import AdminPOSView from '../views/admin/AdminPOSView.vue';
 
 const routes = [
   {path: '/', name: 'home', component: HomeView},
@@ -201,6 +203,13 @@ const routes = [
         props: true,
         meta: {requiresAuth: true, requiresAdmin: true}
       },
+      // thêm POS ( bán hàng tại cửa hàng )
+      {
+        path: 'pos',
+        name: 'adminPOS',
+        component: AdminPOSView,
+        meta: {requiresAuth: true, requiresAdmin: true}
+      }
     ]
   },
 

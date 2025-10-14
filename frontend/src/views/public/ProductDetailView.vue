@@ -1,11 +1,7 @@
 <template>
   <div class="product-detail-view container py-4">
 
-    <div
-      v-if="loading && !product"
-      class="alert alert-info text-center py-5 fs-5 shadow-sm"
-      role="alert"
-    >
+    <div v-if="loading && !product" class="alert alert-info text-center py-5 fs-5 shadow-sm" role="alert">
       <div class="spinner-border spinner-border-sm me-2" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
@@ -34,13 +30,8 @@
       <div class="row g-4 g-lg-5 mb-5">
 
         <div class="col-lg-6 text-center product-gallery">
-          <img
-            :src="product.imageUrl || defaultImage"
-            :alt="`Ảnh sản phẩm ${product.name}`"
-            class="img-fluid rounded shadow-sm product-main-image border"
-            @error="onImageError"
-            loading="lazy"
-          />
+          <img :src="product.imageUrl || defaultImage" :alt="`Ảnh sản phẩm ${product.name}`"
+            class="img-fluid rounded shadow-sm product-main-image border" @error="onImageError" loading="lazy" />
 
         </div>
 
@@ -48,13 +39,10 @@
         <div class="col-lg-6 product-info">
 
           <div v-if="product.category" class="mb-2">
-            <router-link
-              :to="{
-                name: 'productListByCategory',
-                params: { categorySlug: product.category.slug },
-              }"
-              class="badge text-bg-secondary text-decoration-none product-category-link"
-            >
+            <router-link :to="{
+              name: 'productListByCategory',
+              params: { categorySlug: product.category.slug },
+            }" class="badge text-bg-secondary text-decoration-none product-category-link">
               <i class="bi bi-tag me-1"></i> {{ product.category.name }}
             </router-link>
           </div>
@@ -64,36 +52,20 @@
 
 
           <div class="mb-3 product-rating-summary">
-            <span
-              v-if="product.averageRating > 0"
-              class="review-stars me-2"
-              :aria-label="`${product.averageRating.toFixed(1)} out of 5 stars`"
-            >
-              <i
-                v-for="star in 5"
-                :key="`avg-star-${star}`"
-                class="bi text-warning"
-                :class="
-                  star <= Math.round(product.averageRating)
-                    ? 'bi-star-fill'
-                    : star - 0.5 <= product.averageRating
+            <span v-if="product.averageRating > 0" class="review-stars me-2"
+              :aria-label="`${product.averageRating.toFixed(1)} out of 5 stars`">
+              <i v-for="star in 5" :key="`avg-star-${star}`" class="bi text-warning" :class="star <= Math.round(product.averageRating)
+                  ? 'bi-star-fill'
+                  : star - 0.5 <= product.averageRating
                     ? 'bi-star-half'
                     : 'bi-star'
-                "
-              ></i>
+                "></i>
               ({{ product.averageRating.toFixed(1) }})
             </span>
-            <span
-              v-else-if="!loadingReviews && product.reviewCount === 0"
-              class="text-muted small me-2"
-              >(Chưa có đánh giá)</span
-            >
-            <a
-              href="#reviews-content"
-              @click.prevent="scrollToReviews"
-              class="text-muted text-decoration-none small"
-              v-if="product.reviewCount > 0"
-            >
+            <span v-else-if="!loadingReviews && product.reviewCount === 0" class="text-muted small me-2">(Chưa có đánh
+              giá)</span>
+            <a href="#reviews-content" @click.prevent="scrollToReviews" class="text-muted text-decoration-none small"
+              v-if="product.reviewCount > 0">
               ({{ product.reviewCount || 0 }} đánh giá)
             </a>
           </div>
@@ -115,9 +87,7 @@
             </p>
             <p v-if="product.stock !== null && product.stock !== undefined" class="mb-0 small">
               <strong><i class="bi bi-box-seam me-1"></i> Tình trạng:</strong>
-              <span
-                :class="product.stock > 0 ? 'text-success fw-semibold' : 'text-warning fw-semibold'"
-              >
+              <span :class="product.stock > 0 ? 'text-success fw-semibold' : 'text-warning fw-semibold'">
                 {{ product.stock > 0 ? "Còn hàng" : "Hết hàng" }}
               </span>
               <span v-if="product.stock > 0"> ({{ product.stock }} sản phẩm có sẵn)</span>
@@ -127,40 +97,19 @@
 
           <div class="product-actions mb-4" v-if="!authStore.isAdmin">
 
-            <div
-              class="mb-3 quantity-selector d-flex align-items-center"
-              style="max-width: 150px"
-              v-if="product.stock > 0"
-            >
-              <label for="quantityInput" class="form-label me-2 mb-0 flex-shrink-0"
-                >Số lượng:</label
-              >
+            <div class="mb-3 quantity-selector d-flex align-items-center" style="max-width: 150px"
+              v-if="product.stock > 0">
+              <label for="quantityInput" class="form-label me-2 mb-0 flex-shrink-0">Số lượng:</label>
               <div class="input-group input-group-sm">
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  @click="changeQuantity(-1)"
-                  :disabled="selectedQuantity <= 1 || addingToCart"
-                >
+                <button class="btn btn-outline-secondary" type="button" @click="changeQuantity(-1)"
+                  :disabled="selectedQuantity <= 1 || addingToCart">
                   -
                 </button>
-                <input
-                  type="number"
-                  id="quantityInput"
-                  class="form-control text-center px-1"
-                  v-model.number="selectedQuantity"
-                  @change="validateQuantity"
-                  min="1"
-                  :max="product.stock || 1"
-                  :disabled="addingToCart"
-                  aria-label="Số lượng sản phẩm"
-                />
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  @click="changeQuantity(1)"
-                  :disabled="selectedQuantity >= (product.stock || 0) || addingToCart"
-                >
+                <input type="number" id="quantityInput" class="form-control text-center px-1"
+                  v-model.number="selectedQuantity" @change="validateQuantity" min="1" :max="product.stock || 1"
+                  :disabled="addingToCart" aria-label="Số lượng sản phẩm" />
+                <button class="btn btn-outline-secondary" type="button" @click="changeQuantity(1)"
+                  :disabled="selectedQuantity >= (product.stock || 0) || addingToCart">
                   +
                 </button>
               </div>
@@ -173,45 +122,28 @@
 
             <div class="d-flex flex-wrap gap-2 mt-2">
 
-              <button
-                type="button"
-                class="btn btn-success btn-lg flex-grow-1"
-                :disabled="addingToCart || product.stock <= 0"
-                @click="handleAddToCart"
-              >
-                <span
-                  v-if="addingToCart"
-                  class="spinner-border spinner-border-sm me-1"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
+              <button type="button" class="btn btn-success btn-lg flex-grow-1"
+                :disabled="addingToCart || product.stock <= 0" @click="handleAddToCart">
+                <span v-if="addingToCart" class="spinner-border spinner-border-sm me-1" role="status"
+                  aria-hidden="true"></span>
                 <i v-else class="bi bi-cart-plus me-1"></i>
                 {{ addingToCart ? "Đang thêm..." : "Thêm vào giỏ" }}
               </button>
 
-              <button
-                type="button"
-                @click="openZaloChat"
-                class="btn btn-primary btn-lg d-inline-flex align-items-center"
-              >
+              <button type="button" @click="openZaloChat"
+                class="btn btn-primary btn-lg d-inline-flex align-items-center">
                 <img src="../../assets/images/zalo-icon.png" alt="Zalo" class="zalo-icon me-2" />
                 Đặt hàng Zalo
               </button>
             </div>
 
 
-            <div
-              v-if="addToCartMessage"
-              class="alert mt-3 p-2 small"
-              :class="addToCartError ? 'alert-danger' : 'alert-success'"
-            >
+            <div v-if="addToCartMessage" class="alert mt-3 p-2 small"
+              :class="addToCartError ? 'alert-danger' : 'alert-success'">
               {{ addToCartMessage }}
             </div>
 
-            <p
-              v-if="product && product.stock <= 0 && !addToCartMessage"
-              class="text-danger small mt-2"
-            >
+            <p v-if="product && product.stock <= 0 && !addToCartMessage" class="text-danger small mt-2">
               Sản phẩm hiện đang hết hàng.
             </p>
           </div>
@@ -228,125 +160,68 @@
       <div class="product-details-tabs">
         <ul class="nav nav-tabs mb-0" id="productTab" role="tablist">
           <li class="nav-item" role="presentation">
-            <button
-              class="nav-link active"
-              id="description-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#description-content"
-              type="button"
-              role="tab"
-              aria-controls="description-content"
-              aria-selected="true"
-            >
+            <button class="nav-link active" id="description-tab" data-bs-toggle="tab"
+              data-bs-target="#description-content" type="button" role="tab" aria-controls="description-content"
+              aria-selected="true">
               <i class="bi bi-card-text me-1"></i> Mô tả sản phẩm
             </button>
           </li>
           <li class="nav-item" role="presentation">
-            <button
-              class="nav-link position-relative"
-              id="reviews-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#reviews-content"
-              type="button"
-              role="tab"
-              aria-controls="reviews-content"
-              aria-selected="false"
-            >
+            <button class="nav-link position-relative" id="reviews-tab" data-bs-toggle="tab"
+              data-bs-target="#reviews-content" type="button" role="tab" aria-controls="reviews-content"
+              aria-selected="false">
               <i class="bi bi-chat-square-text me-1"></i> Đánh giá
-              <span
-                v-if="product.reviewCount > 0"
-                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
-              >
+              <span v-if="product.reviewCount > 0"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
                 {{ product.reviewCount }}
                 <span class="visually-hidden">reviews</span>
               </span>
             </button>
           </li>
         </ul>
-        <div
-          class="tab-content p-3 p-lg-4 border border-top-0 rounded-bottom shadow-sm"
-          id="productTabContent"
-        >
+        <div class="tab-content p-3 p-lg-4 border border-top-0 rounded-bottom shadow-sm" id="productTabContent">
 
-          <div
-            class="tab-pane fade show active"
-            id="description-content"
-            role="tabpanel"
-            aria-labelledby="description-tab"
-          >
+          <div class="tab-pane fade show active" id="description-content" role="tabpanel"
+            aria-labelledby="description-tab">
             <h3 class="h5 mb-3 d-lg-none">Mô tả sản phẩm</h3>
-            <div
-              v-if="product.description"
-              v-html="product.description"
-              class="description-content"
-            ></div>
+            <div v-if="product.description" v-html="product.description" class="description-content"></div>
             <p v-else class="text-muted fst-italic">Sản phẩm này chưa có mô tả chi tiết.</p>
           </div>
 
 
-          <div
-            class="tab-pane fade"
-            id="reviews-content"
-            role="tabpanel"
-            aria-labelledby="reviews-tab"
-          >
+          <div class="tab-pane fade" id="reviews-content" role="tabpanel" aria-labelledby="reviews-tab">
             <h3 class="h5 mb-3 d-lg-none">Đánh giá sản phẩm</h3>
 
 
-            <div
-              class="mb-3 text-end"
-              v-if="authStore.isAuthenticated && !authStore.isAdmin && !showReviewForm"
-            >
+            <div class="mb-3 text-end" v-if="authStore.isAuthenticated && !authStore.isAdmin && !showReviewForm">
               <button class="btn btn-outline-primary btn-sm" @click="toggleReviewForm">
                 <i class="bi bi-pencil-square me-1"></i> Viết đánh giá
               </button>
             </div>
 
 
-            <div
-              v-if="authStore.isAuthenticated && !authStore.isAdmin && showReviewForm"
-              class="card mb-4 shadow-sm border bg-light"
-            >
+            <div v-if="authStore.isAuthenticated && !authStore.isAdmin && showReviewForm"
+              class="card mb-4 shadow-sm border bg-light">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h4 class="card-title h6 mb-0">Viết đánh giá của bạn cho "{{ product.name }}"</h4>
-                  <button
-                    type="button"
-                    class="btn-close small"
-                    @click="toggleReviewForm"
-                    aria-label="Đóng form đánh giá"
-                  ></button>
+                  <button type="button" class="btn-close small" @click="toggleReviewForm"
+                    aria-label="Đóng form đánh giá"></button>
                 </div>
                 <form @submit.prevent="submitReview" novalidate>
                   <!-- {} -->
                   <div class="mb-3">
-                    <label class="form-label d-block mb-1"
-                      >Xếp hạng <span class="text-danger">*</span>:</label
-                    >
+                    <label class="form-label d-block mb-1">Xếp hạng <span class="text-danger">*</span>:</label>
                     <div class="btn-group review-star-group" role="group" aria-label="Rating">
-                      <button
-                        type="button"
-                        v-for="star in 5"
-                        :key="star"
-                        class="btn btn-lg"
-                        :class="
-                          newReview.rating && star <= newReview.rating
-                            ? 'btn-warning text-white'
-                            : 'btn-outline-warning'
-                        "
-                        @click="setRating(star)"
-                        :disabled="submittingReview"
-                        :aria-pressed="newReview.rating === star"
-                        :title="`${star} sao`"
-                      >
-                        <i
-                          class="bi"
-                          :class="
-                            newReview.rating && star <= newReview.rating
-                              ? 'bi-star-fill'
-                              : 'bi-star'
-                          "
-                        ></i>
+                      <button type="button" v-for="star in 5" :key="star" class="btn btn-lg" :class="newReview.rating && star <= newReview.rating
+                          ? 'btn-warning text-white'
+                          : 'btn-outline-warning'
+                        " @click="setRating(star)" :disabled="submittingReview"
+                        :aria-pressed="newReview.rating === star" :title="`${star} sao`">
+                        <i class="bi" :class="newReview.rating && star <= newReview.rating
+                            ? 'bi-star-fill'
+                            : 'bi-star'
+                          "></i>
                       </button>
                     </div>
                     <div v-if="reviewFormClientError.rating" class="text-danger small mt-1">
@@ -356,23 +231,14 @@
                   <!-- {} -->
                   <div class="mb-3">
                     <label for="reviewComment" class="form-label">Bình luận:</label>
-                    <textarea
-                      class="form-control"
-                      :class="{ 'is-invalid': reviewFormClientError.comment }"
-                      id="reviewComment"
-                      rows="4"
-                      v-model="newReview.comment"
-                      :disabled="submittingReview"
-                      placeholder="Chia sẻ cảm nhận chi tiết của bạn về sản phẩm..."
-                      maxlength="1000"
-                    ></textarea>
+                    <textarea class="form-control" :class="{ 'is-invalid': reviewFormClientError.comment }"
+                      id="reviewComment" rows="4" v-model="newReview.comment" :disabled="submittingReview"
+                      placeholder="Chia sẻ cảm nhận chi tiết của bạn về sản phẩm..." maxlength="1000"></textarea>
                     <div class="d-flex justify-content-between">
                       <div v-if="reviewFormClientError.comment" class="invalid-feedback">
                         {{ reviewFormClientError.comment }}
                       </div>
-                      <small class="text-muted form-text ms-auto"
-                        >{{ newReview.comment.length }}/1000</small
-                      >
+                      <small class="text-muted form-text ms-auto">{{ newReview.comment.length }}/1000</small>
                     </div>
                   </div>
                   <!-- {} -->
@@ -383,42 +249,26 @@
                     {{ reviewSubmitSuccess }}
                   </div>
                   <!-- {} -->
-                  <button
-                    type="submit"
-                    class="btn btn-primary px-4"
-                    :disabled="submittingReview || !newReview.rating"
-                  >
-                    <span
-                      v-if="submittingReview"
-                      class="spinner-border spinner-border-sm me-2"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
+                  <button type="submit" class="btn btn-primary px-4" :disabled="submittingReview || !newReview.rating">
+                    <span v-if="submittingReview" class="spinner-border spinner-border-sm me-2" role="status"
+                      aria-hidden="true"></span>
                     {{ submittingReview ? "Đang gửi..." : "Gửi đánh giá" }}
                   </button>
                 </form>
               </div>
             </div>
 
-            <div
-              v-else-if="!authStore.isAuthenticated && !loadingReviews"
-              class="alert alert-info small p-3 text-center shadow-sm"
-            >
+            <div v-else-if="!authStore.isAuthenticated && !loadingReviews"
+              class="alert alert-info small p-3 text-center shadow-sm">
               <i class="bi bi-info-circle me-1"></i> Vui lòng
-              <router-link
-                :to="{ name: 'login', query: { returnUrl: route.fullPath } }"
-                class="fw-semibold"
-                >đăng nhập
+              <router-link :to="{ name: 'login', query: { returnUrl: route.fullPath } }" class="fw-semibold">đăng nhập
               </router-link>
               để viết đánh giá cho sản phẩm này.
             </div>
 
 
             <div class="reviews-list-section mt-4">
-              <h4
-                class="h6 mb-3 border-bottom pb-2"
-                v-if="reviews.length > 0 || loadingReviews || errorReviews"
-              >
+              <h4 class="h6 mb-3 border-bottom pb-2" v-if="reviews.length > 0 || loadingReviews || errorReviews">
                 Tất cả đánh giá ({{ product.reviewCount || reviews.length }})
               </h4>
 
@@ -434,31 +284,17 @@
               </div>
 
               <div v-else-if="reviews.length > 0">
-                <div
-                  v-for="review in reviews"
-                  :key="review.id"
-                  class="review-item mb-4 border-bottom pb-3"
-                >
+                <div v-for="review in reviews" :key="review.id" class="review-item mb-4 border-bottom pb-3">
                   <div class="d-flex justify-content-between align-items-start mb-1 flex-wrap">
                     <div class="review-author mb-1">
                       <span class="fw-semibold me-2">{{ review.reviewerName || "Ẩn danh" }}</span>
-                      <span
-                        class="review-stars text-warning"
-                        :aria-label="`${review.rating} out of 5 stars`"
-                      >
-                        <i
-                          v-for="star in 5"
-                          :key="`review-${review.id}-star-${star}`"
-                          class="bi"
-                          :class="star <= review.rating ? 'bi-star-fill' : 'bi-star'"
-                        ></i>
+                      <span class="review-stars text-warning" :aria-label="`${review.rating} out of 5 stars`">
+                        <i v-for="star in 5" :key="`review-${review.id}-star-${star}`" class="bi"
+                          :class="star <= review.rating ? 'bi-star-fill' : 'bi-star'"></i>
                       </span>
                     </div>
-                    <small
-                      class="text-muted flex-shrink-0 ms-md-2"
-                      :title="formatFullDateTime(review.createdAt)"
-                      >{{ formatDateRelative(review.createdAt) }}</small
-                    >
+                    <small class="text-muted flex-shrink-0 ms-md-2" :title="formatFullDateTime(review.createdAt)">{{
+                      formatDateRelative(review.createdAt) }}</small>
                   </div>
                   <p v-if="review.comment" class="mb-2 review-comment">{{ review.comment }}</p>
                   <p v-else class="text-muted fst-italic small mb-2">
@@ -468,19 +304,13 @@
 
 
                 </div>
-                <BasePagination
-                  v-if="reviewsTotalPages > 1"
-                  :current-page="reviewsCurrentPage + 1"
-                  :total-pages="reviewsTotalPages"
-                  @page-change="handleReviewPageChange"
-                  class="mt-4 d-flex justify-content-center"
-                />
+                <BasePagination v-if="reviewsTotalPages > 1" :current-page="reviewsCurrentPage + 1"
+                  :total-pages="reviewsTotalPages" @page-change="handleReviewPageChange"
+                  class="mt-4 d-flex justify-content-center" />
               </div>
 
-              <div
-                v-else-if="!loadingReviews && !errorReviews"
-                class="text-muted text-center my-4 p-4 bg-light rounded border"
-              >
+              <div v-else-if="!loadingReviews && !errorReviews"
+                class="text-muted text-center my-4 p-4 bg-light rounded border">
                 <i class="bi bi-chat-square-dots me-1"></i> Chưa có đánh giá nào cho sản phẩm này.
                 Hãy là người đầu tiên đánh giá!
               </div>
@@ -491,11 +321,8 @@
     </div>
 
 
-    <div
-      v-else-if="!loading && !product && !error"
-      class="alert alert-warning text-center py-5 fs-5 shadow-sm"
-      role="alert"
-    >
+    <div v-else-if="!loading && !product && !error" class="alert alert-warning text-center py-5 fs-5 shadow-sm"
+      role="alert">
       <i class="bi bi-search me-2"></i> Không tìm thấy thông tin sản phẩm bạn yêu cầu.
       <p class="mt-2 mb-0 small">
         Có thể sản phẩm đã bị xóa hoặc đường dẫn không đúng.
@@ -513,7 +340,7 @@ import { getProductBySlug } from "@/http/modules/public/productService.js";
 import defaultImage from "@/assets/images/placeholder.png";
 import { useAuthStore } from "@/store/auth.js";
 import { useCartStore } from "@/store/cart.js";
-import { getProductReviews, createProductReview} from "@/http/modules/public/reviewService.js"; 
+import { getProductReviews, createProductReview } from "@/http/modules/public/reviewService.js";
 import BasePagination from "@/components/common/BasePagination.vue";
 
 console.log("check getProductBySlug: ", getProductBySlug);
@@ -817,7 +644,7 @@ const handleReplyClick = (reviewId) => {
 const openZaloChat = () => {
   if (!product.value) return;
 
-  const shopZaloPhone = "0389366619";
+  const shopZaloPhone = "0345933705"; // Thay đổi số điện thoại Zalo của shop tại đây
   const productName = product.value.name;
   const productUrl = window.location.href;
 
@@ -873,9 +700,6 @@ watch(
 </script>
 
 <style scoped>
-
-
-
 .product-gallery .product-main-image {
   max-height: 550px;
   object-fit: contain;
@@ -985,8 +809,7 @@ watch(
 .product-details-tabs .nav-tabs .nav-item.show .nav-link {
   color: var(--bs-primary);
   background-color: var(--bs-body-bg);
-  border-color: var(--bs-border-color) var(--bs-border-color) var(--bs-body-bg)
-    var(--bs-border-color);
+  border-color: var(--bs-border-color) var(--bs-border-color) var(--bs-body-bg) var(--bs-border-color);
   border-top-left-radius: var(--bs-border-radius);
   border-top-right-radius: var(--bs-border-radius);
   font-weight: 600;
@@ -1070,4 +893,3 @@ watch(
   margin: 0;
 }
 </style>
-

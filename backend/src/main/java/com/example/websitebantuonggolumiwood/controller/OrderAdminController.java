@@ -1,5 +1,6 @@
 package com.example.websitebantuonggolumiwood.controller;
 
+import com.example.websitebantuonggolumiwood.dto.NotificationDTO;
 import com.example.websitebantuonggolumiwood.dto.OrderDetailAdminDTO;
 import com.example.websitebantuonggolumiwood.dto.OrderItemAdminDTO;
 import com.example.websitebantuonggolumiwood.entity.OrderAdmin;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,14 +48,15 @@ public class OrderAdminController {
     private final OrderAdminRepository orderAdminRepository;
     private final ShippingMethodAdminRepository shippingMethodAdminRepository;
     private final ProductRepository productRepository;
+    private  final SimpMessagingTemplate simpMessagingTemplate;
 
-    public OrderAdminController(UserManagementService userManagementService, OrderAdminRepository orderAdminRepository, ShippingMethodAdminRepository shippingMethodAdminRepository, ProductRepository productRepository) {
+    public OrderAdminController(UserManagementService userManagementService, OrderAdminRepository orderAdminRepository, ShippingMethodAdminRepository shippingMethodAdminRepository, ProductRepository productRepository, SimpMessagingTemplate simpMessagingTemplate) {
         this.userManagementService = userManagementService;
         this.orderAdminRepository = orderAdminRepository;
         this.shippingMethodAdminRepository = shippingMethodAdminRepository;
         this.productRepository = productRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
-
 
 
     // Lấy danh sách đơn hàng, phan trang, sắp xếp, tìm kếm, tìm theo trạng thái, tìm theo ngày tạo
@@ -160,6 +163,7 @@ public class OrderAdminController {
         // Cập nhật trạng thái mới
         order.setStatus(newStatus.trim().toUpperCase());
 
+
         if ("CANCELLED".equalsIgnoreCase(newStatus)) {
             order.setCancelReason(cancelReason);
         } else {
@@ -189,6 +193,88 @@ public class OrderAdminController {
                 logger.warn("Không thể cập nhật tổng chi tiêu: userId hoặc totalAmount bị null (order ID: {})", id);
             }
         }
+
+        // === Gửi thông báo WebSocket tới người dùng ===
+        try {
+            Long userId = order.getUserId();
+            if (userId != null) {
+                String orderCode = "Đơn hàng #" + order.getId(); // dùng làm mã đơn hàng hiển thị
+
+                // Xử lý nội dung thông báo dựa theo trạng thái
+                String messageContent;
+                BigDecimal total = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
+
+                switch (newStatus.toUpperCase()) {
+                    case "PENDING":
+                        messageContent = orderCode + " đang chờ xác nhận.";
+                        break;
+                    case "PAYMENT_PENDING":
+                        messageContent = orderCode + " đang chờ thanh toán.";
+                        break;
+                    case "PROCESSING":
+                        messageContent = total.compareTo(new BigDecimal("10000000")) >= 0
+                                ? orderCode + ": Đã nhận được cọc 30%. Đơn hàng đang được xử lý."
+                                : orderCode + " đang được xử lý.";
+                        break;
+                    case "SHIPPING":
+                        messageContent = orderCode + " đang được giao đến bạn.";
+                        break;
+                    case "DELIVERY_FAILED":
+                        messageContent = orderCode + " giao không thành công. Vui lòng liên hệ hỗ trợ."
+                        + (order.getCancelReason() != null ? " Lý do: " + order.getCancelReason() : "");;
+
+                        break;
+                    case "COMPLETED":
+                        messageContent = total.compareTo(new BigDecimal("10000000")) >= 0
+                                ? orderCode + " đã hoàn tất. Cảm ơn bạn đã đặt cọc và mua hàng!"
+                                : orderCode + " đã hoàn tất. Cảm ơn bạn đã mua hàng!";
+                        break;
+                    case "CANCELLED":
+                        messageContent = orderCode + " đã bị hủy." +
+                                (order.getCancelReason() != null ? " Lý do: " + order.getCancelReason() : "");
+                        break;
+                    default:
+                        messageContent = orderCode + ": Trạng thái đơn hàng đã được cập nhật thành " + newStatus + ".";
+                }
+
+                // Tạo đối tượng NotificationDTO để gửi WebSocket
+                NotificationDTO notification = new NotificationDTO();
+                notification.setTitle("Cập nhật đơn hàng");
+                notification.setContent(messageContent);
+                notification.setOrderId(order.getId());
+                notification.setCreatedTime(LocalDateTime.now());
+
+                // 🔑 Gửi tới người dùng có đơn hàng này
+                String username = userManagementService.getUsernameById(userId);
+                if (username != null) {
+                    simpMessagingTemplate.convertAndSendToUser(
+                            username,
+                            "/queue/notify",
+                            notification
+                    );
+                    logger.info("✅ Đã gửi thông báo tới USER: userId={}, username={}, content={}", userId, username, messageContent);
+                } else {
+                    logger.warn("⚠️ Không tìm thấy username từ userId {} → Không gửi được thông báo WebSocket", userId);
+                }
+
+                // 🔔 Gửi thông báo tới admin
+                NotificationDTO adminNotification = new NotificationDTO();
+                adminNotification.setTitle("Đơn hàng được cập nhật");
+                adminNotification.setContent("Trạng thái đơn hàng #" + order.getId() + " đã thay đổi thành: " + newStatus);
+                adminNotification.setOrderId(order.getId());
+                adminNotification.setCreatedTime(LocalDateTime.now());
+
+                simpMessagingTemplate.convertAndSend("/topic/notify/admin", adminNotification);
+                logger.info("✅ Đã gửi thông báo tới ADMIN: {}", adminNotification.getContent());
+
+            } else {
+                logger.warn("⚠️ Không gửi được thông báo vì order không có userId (orderId: {})", order.getId());
+            }
+        } catch (Exception e) {
+            logger.error("❌ Lỗi khi gửi thông báo WebSocket cho đơn hàng ID {}: {}", order.getId(), e.getMessage(), e);
+        }
+
+
         // ================================================================
 
         OrderDetailAdminDTO response = mapToOrderDetailResponse(order);

@@ -2,6 +2,7 @@ package com.example.websitebantuonggolumiwood.service;
 
 import com.example.websitebantuonggolumiwood.dto.AddAddressDTO;
 import com.example.websitebantuonggolumiwood.entity.Address;
+import com.example.websitebantuonggolumiwood.entity.Order;
 import com.example.websitebantuonggolumiwood.entity.User;
 import com.example.websitebantuonggolumiwood.dto.AddressDTO;
 import com.example.websitebantuonggolumiwood.dto.UserListDTO;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +48,9 @@ public class UserManagementService {
     private static final BigDecimal SILVER_TIER_THRESHOLD = new BigDecimal("10000000");       // 10 triệu
     private static final BigDecimal GOLD_TIER_THRESHOLD = new BigDecimal("30000000");         // 30 triệu
     private static final BigDecimal DIAMOND_TIER_THRESHOLD = new BigDecimal("100000000");     // 100 triệu
+
+    // thoi gian khong hoat dong toi da 6 thang = 180 ngay
+    private static  final long INACTIVITY_THRESHOLD_DAYS = 180;
 
 
     /**
@@ -219,7 +224,7 @@ public class UserManagementService {
 
     /**
      * Cập nhật tổng chi tiêu và bậc khách hàng (gọi khi đơn hàng hoàn tất thanh toán).
-     *
+     ** neu qua 180 ngay ma user khong phat sinh giao dich( dua tren don hang gan nhat) reset totalSpend vaf tier ve 0 va BRONZE
      * @param userId      ID của khách hàng
      * @param orderAmount Số tiền đơn hàng mới
      */
@@ -242,6 +247,19 @@ public class UserManagementService {
         if (!"CUSTOMER".equalsIgnoreCase(user.getRole())) {
             logger.warn("User ID {} không phải là CUSTOMER (role = {}), không cập nhật.", userId, user.getRole());
             return;
+        }
+
+        // Lay don hang gan nhat dua theo orderdate
+        Optional<Order> latestOrder = orderRepository.findTopByUserOrderByOrderDateDesc(user);
+        LocalDateTime lastActivty = latestOrder.map(Order::getOrderDate).orElse(user.getCreatedAt());
+        LocalDateTime now = LocalDateTime.now();
+        long dayInactive = ChronoUnit.DAYS.between(lastActivty,now);
+
+        // neu qua 180 ngay thi se reset totalSpent va tier ve 0 va BRONZE
+        if(dayInactive > INACTIVITY_THRESHOLD_DAYS){
+            logger.info("User ID {} inactive for {} days (over 6 months, based on latest order), reset totalSpent va tier ve 0 va BRONZE", userId, dayInactive);
+            user.setTotalSpent(BigDecimal.ZERO);
+            user.setTier("BRONZE");
         }
 
         // Cộng thêm số tiền của đơn hàng mới vào tổng chi tiêu hiện tại
@@ -288,4 +306,13 @@ public class UserManagementService {
             return "BRONZE";
         }
     }
+
+
+
+    public String getUsernameById(Long userId) {
+        return userManagementRepository.findById(userId)
+                .map(user -> user.getUsername()) // hoặc .map(User::getUsername) nếu dùng entity tên là User
+                .orElse(null);
+    }
+
 }

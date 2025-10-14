@@ -4,10 +4,7 @@
 
 
 
-    <div
-      v-if="cartStore.isLoading && !cartStore.cartId && cartStore.items.length === 0"
-      class="text-center my-5 py-5"
-    >
+    <div v-if="cartStore.isLoading && !cartStore.cartId && cartStore.items.length === 0" class="text-center my-5 py-5">
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem" role="status">
         <span class="visually-hidden">Đang tải giỏ hàng...</span>
       </div>
@@ -16,10 +13,8 @@
 
 
 
-    <div
-      v-else-if="cartStore.error && !cartStore.cartId && cartStore.items.length === 0"
-      class="alert alert-warning text-center py-4"
-    >
+    <div v-else-if="cartStore.error && !cartStore.cartId && cartStore.items.length === 0"
+      class="alert alert-warning text-center py-4">
       <i class="bi bi-exclamation-triangle fs-2 d-block mb-2"></i>
       <p class="mb-1">Không thể tải giỏ hàng:</p>
       <p class="mb-0 small">{{ cartStore.error }}</p>
@@ -28,10 +23,7 @@
 
 
 
-    <div
-      v-else-if="!cartStore.isLoading && cartStore.items.length === 0"
-      class="alert alert-info text-center py-5"
-    >
+    <div v-else-if="!cartStore.isLoading && cartStore.items.length === 0" class="alert alert-info text-center py-5">
       <i class="bi bi-cart-x fs-1 d-block mb-3 text-secondary"></i>
       <h4>Giỏ hàng của bạn hiện đang trống.</h4>
       <router-link :to="{ name: 'productList' }" class="btn btn-outline-primary mt-3">
@@ -54,123 +46,75 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Sản phẩm trong giỏ ({{ cartStore.totalItemsCount }} sản phẩm)</h5>
 
-              <button
-                class="btn btn-outline-danger btn-sm"
-                @click="clearCart"
-                :disabled="cartStore.isLoading && removingItemId === 'all'"
-              >
-                <span
-                  v-if="cartStore.isLoading && removingItemId === 'all'"
-                  class="spinner-border spinner-border-sm me-1"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
+              <button class="btn btn-outline-danger btn-sm" @click="clearCart"
+                :disabled="cartStore.isLoading && removingItemId === 'all'">
+                <span v-if="cartStore.isLoading && removingItemId === 'all'"
+                  class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                 <i v-else class="bi bi-x-lg"></i> Xóa hết
               </button>
             </div>
             <div class="card-body p-0">
               <ul class="list-group list-group-flush">
 
-                <li
-                  v-for="item in cartStore.items"
-                  :key="item.productId"
-                  class="list-group-item px-3 py-3"
-                >
+                <li v-for="item in cartStore.items" :key="item.productId" class="list-group-item px-3 py-3">
                   <div class="row align-items-center">
 
                     <div class="col-3 col-md-2 col-lg-1">
-                      <img
-                        :src="item.imageUrl || defaultImage"
-                        :alt="item.productName"
-                        class="img-fluid rounded cart-item-image"
-                        @error="onImageError"
-                      />
+                      <img :src="item.imageUrl || defaultImage" :alt="item.productName"
+                        class="img-fluid rounded cart-item-image" @error="onImageError" />
                     </div>
 
                     <div class="col-9 col-md-5 col-lg-6">
-                      <router-link
-                        :to="{
-                          name: 'productDetail',
-                          params: { slug: item.productSlug || item.productId },
-                        }"
-                        class="text-decoration-none text-dark fw-medium mb-1 d-block line-clamp-2"
-                      >
+                      <router-link :to="{
+                        name: 'productDetail',
+                        params: { slug: item.productSlug || item.productId },
+                      }" class="text-decoration-none text-dark fw-medium mb-1 d-block line-clamp-2">
                         {{ item.productName }}
                       </router-link>
 
-                      <small class="text-muted d-block"
-                        >Đơn giá: {{ formatCurrency(item.price) }}</small
-                      >
+                      <small class="text-muted d-block">Đơn giá: {{ formatCurrency(item.price) }}</small>
 
-                      <button
-                        class="btn btn-link text-danger btn-sm p-0 mt-1 d-md-none"
+                      <button class="btn btn-link text-danger btn-sm p-0 mt-1 d-md-none"
                         @click="removeFromCart(item.productId)"
-                        :disabled="removingItemId === item.productId || cartStore.isLoading"
-                      >
-                        <span
-                          v-if="removingItemId === item.productId"
-                          class="spinner-border spinner-border-sm"
-                        ></span>
+                        :disabled="removingItemId === item.productId || cartStore.isLoading">
+                        <span v-if="removingItemId === item.productId" class="spinner-border spinner-border-sm"></span>
                         <i v-else class="bi bi-trash"></i> Xóa
                       </button>
                     </div>
 
                     <div class="col-6 col-md-3 col-lg-2 mt-2 mt-md-0">
                       <div class="input-group input-group-sm quantity-control">
-                        <button
-                          class="btn btn-outline-secondary px-2"
-                          type="button"
-                          @click="updateQuantity(item.productId, item.quantity - 1)"
-                          :disabled="
-                            item.quantity <= 1 ||
+                        <button class="btn btn-outline-secondary px-2" type="button"
+                          @click="updateQuantity(item.productId, item.quantity - 1)" :disabled="item.quantity <= 1 ||
                             updatingItemId === item.productId ||
                             cartStore.isLoading
-                          "
-                        >
+                            ">
                           -
                         </button>
-                        <input
-                          type="number"
-                          class="form-control text-center px-1 no-spinners"
-                          :value="item.quantity"
-                          @change="handleQuantityChange($event, item.productId)"
-                          min="1"
-                          :disabled="updatingItemId === item.productId || cartStore.isLoading"
-                          aria-label="Số lượng"
-                        />
-                        <button
-                          class="btn btn-outline-secondary px-2"
-                          type="button"
+                        <input type="number" class="form-control text-center px-1 no-spinners" :value="item.quantity"
+                          @change="handleQuantityChange($event, item.productId)" min="1"
+                          :disabled="updatingItemId === item.productId || cartStore.isLoading" aria-label="Số lượng" />
+                        <button class="btn btn-outline-secondary px-2" type="button"
                           @click="updateQuantity(item.productId, item.quantity + 1)"
-                          :disabled="updatingItemId === item.productId || cartStore.isLoading"
-                        >
+                          :disabled="updatingItemId === item.productId || cartStore.isLoading">
                           +
                         </button>
 
-                        <span
-                          v-if="updatingItemId === item.productId"
-                          class="spinner-border spinner-border-sm ms-1 align-self-center"
-                          role="status"
-                          aria-hidden="true"
-                        ></span>
+                        <span v-if="updatingItemId === item.productId"
+                          class="spinner-border spinner-border-sm ms-1 align-self-center" role="status"
+                          aria-hidden="true"></span>
                       </div>
                     </div>
 
                     <div class="col-6 col-md-2 col-lg-3 text-end mt-2 mt-md-0">
                       <span class="fw-bold d-block mb-1">{{
                         formatCurrency(item.price * item.quantity)
-                      }}</span>
+                        }}</span>
 
-                      <button
-                        class="btn btn-link text-danger btn-sm p-0 d-none d-md-inline-block"
+                      <button class="btn btn-link text-danger btn-sm p-0 d-none d-md-inline-block"
                         @click="removeFromCart(item.productId)"
-                        :disabled="removingItemId === item.productId || cartStore.isLoading"
-                        title="Xóa sản phẩm"
-                      >
-                        <span
-                          v-if="removingItemId === item.productId"
-                          class="spinner-border spinner-border-sm"
-                        ></span>
+                        :disabled="removingItemId === item.productId || cartStore.isLoading" title="Xóa sản phẩm">
+                        <span v-if="removingItemId === item.productId" class="spinner-border spinner-border-sm"></span>
                         <i v-else class="bi bi-trash"></i>
                       </button>
                     </div>
@@ -184,62 +128,87 @@
 
         <div class="col-lg-4">
           <div class="card shadow-sm sticky-top" style="top: 80px">
-            <div class="card-header bg-light"><h5 class="mb-0">Tóm Tắt Đơn Hàng</h5></div>
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Tóm Tắt Đơn Hàng</h5>
+            </div>
             <div class="card-body">
 
-              <div class="mb-3">
+              <!-- <div class="mb-3">
                 <label for="promotionCode" class="form-label">Mã khuyến mãi</label>
                 <div class="input-group">
-                  <select
-                      class="form-select"
-                      id="promotionCode"
-                      v-model="promotionCodeInput"
-                      :disabled="applyingPromotion || !!appliedPromotion || cartStore.isLoading"
-                    >
-                      <option value="" disabled>-- Chọn mã khuyến mãi --</option>
-                      <!-- <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
-                        {{ promo.label }} {{ promo.code }}
-                      </option> -->
-                      <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
-  ({{ promo.code }})
-</option>
-                    </select>
-                  <button
-                    class="btn btn-secondary"
-                    type="button"
-                    @click="handleApplyPromotion"
-                    :disabled="
-                      applyingPromotion ||
-                      !promotionCodeInput ||
-                      !!appliedPromotion ||
-                      cartStore.isLoading
-                    "
-                  >
-                    <span
-                      v-if="applyingPromotion"
-                      class="spinner-border spinner-border-sm me-1"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
+                  <select class="form-select" id="promotionCode" v-model="promotionCodeInput"
+                    :disabled="applyingPromotion || !!appliedPromotion || cartStore.isLoading">
+                    <option value="" disabled>-- Chọn mã khuyến mãi --</option>
+                    <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
+                      ({{ promo.code }}) 
+                    </option>
+                  </select>
+                  <button class="btn btn-secondary" type="button" @click="handleApplyPromotion" :disabled="applyingPromotion ||
+                    !promotionCodeInput ||
+                    !!appliedPromotion ||
+                    cartStore.isLoading
+                    ">
+                    <span v-if="applyingPromotion" class="spinner-border spinner-border-sm me-1" role="status"
+                      aria-hidden="true"></span>
                     {{ applyingPromotion ? "Đang..." : "Áp dụng" }}
                   </button>
                 </div>
 
                 <div v-if="promotionError" class="text-danger small mt-2">{{ promotionError }}</div>
-                <div
-                  v-if="appliedPromotion && appliedPromotion.success"
-                  class="text-success small mt-2"
-                >
+                <div v-if="appliedPromotion && appliedPromotion.success" class="text-success small mt-2">
                   <i class="bi bi-check-circle-fill"></i> {{ appliedPromotion.message }}
-                  <button
-                    @click="removePromotion"
-                    class="btn btn-link btn-sm text-danger p-0 ms-1"
-                    :disabled="cartStore.isLoading"
-                  >
+                  <button @click="removePromotion" class="btn btn-link btn-sm text-danger p-0 ms-1"
+                    :disabled="cartStore.isLoading">
+                    (Gỡ bỏ)
+                  </button>
+                </div>
+              </div> -->
+
+              <div class="mb-3">
+                <label for="promotionCode" class="form-label">Mã khuyến mãi</label>
+                <div class="input-group">
+                  <select class="form-select" id="promotionCode" v-model="promotionCodeInput"
+                    :disabled="applyingPromotion || !!appliedPromotion || cartStore.isLoading">
+                    <option value="" disabled>-- Chọn mã khuyến mãi --</option>
+                    <option v-for="promo in availablePromotions" :key="promo.code" :value="promo.code">
+                      {{ promo.code }}
+                    </option>
+                  </select>
+                  <button class="btn btn-secondary" type="button" @click="handleApplyPromotion" :disabled="applyingPromotion ||
+                    !promotionCodeInput ||
+                    !!appliedPromotion ||
+                    cartStore.isLoading
+                    ">
+                    <span v-if="applyingPromotion" class="spinner-border spinner-border-sm me-1" role="status"
+                      aria-hidden="true"></span>
+                    {{ applyingPromotion ? "Đang..." : "Áp dụng" }}
+                  </button>
+                </div>
+
+                <!-- Hiển thị mô tả riêng -->
+                <div v-if="promotionCodeInput" class="small text-muted mt-1">
+                  <strong class="d-block" style="font-size: 1rem;">
+                    ({{ promotionCodeInput }})
+                  </strong>
+                  <span style="font-size: 0.85rem;">
+                    {{
+                      availablePromotions.find(p => p.code === promotionCodeInput)?.description
+                    }}
+                  </span>
+                </div>
+
+                <div v-if="promotionError" class="text-danger small mt-2">
+                  {{ promotionError }}
+                </div>
+                <div v-if="appliedPromotion && appliedPromotion.success" class="text-success small mt-2">
+                  <i class="bi bi-check-circle-fill"></i> {{ appliedPromotion.message }}
+                  <button @click="removePromotion" class="btn btn-link btn-sm text-danger p-0 ms-1"
+                    :disabled="cartStore.isLoading">
                     (Gỡ bỏ)
                   </button>
                 </div>
               </div>
+
               <hr />
 
               <ul class="list-group list-group-flush mb-3">
@@ -248,16 +217,13 @@
 
                   <span>{{ formatCurrency(cartStore.subtotal) }}</span>
                 </li>
-                <li
-                  v-if="appliedPromotion && appliedPromotion.success && discountAmount > 0"
-                  class="list-group-item d-flex justify-content-between align-items-center px-0 text-success"
-                >
+                <li v-if="appliedPromotion && appliedPromotion.success && discountAmount > 0"
+                  class="list-group-item d-flex justify-content-between align-items-center px-0 text-success">
                   <span>Giảm giá ({{ appliedPromotion.appliedCode }}):</span>
                   <span>- {{ formatCurrency(discountAmount) }}</span>
                 </li>
                 <li
-                  class="list-group-item d-flex justify-content-between align-items-center px-0 fw-bold fs-5 border-top pt-2"
-                >
+                  class="list-group-item d-flex justify-content-between align-items-center px-0 fw-bold fs-5 border-top pt-2">
                   <span>Tổng cộng:</span>
 
                   <span>{{ formatCurrency(finalTotal) }}</span>
@@ -265,11 +231,8 @@
               </ul>
 
               <div class="d-grid">
-                <button
-                  class="btn btn-primary btn-lg"
-                  @click="goToCheckout"
-                  :disabled="cartStore.items.length === 0 || cartStore.isLoading"
-                >
+                <button class="btn btn-primary btn-lg" @click="goToCheckout"
+                  :disabled="cartStore.items.length === 0 || cartStore.isLoading">
                   <i class="bi bi-credit-card me-2"></i> Tiến hành Thanh toán
                 </button>
               </div>
@@ -647,6 +610,7 @@ watch(
   text-decoration: none;
   vertical-align: middle;
 }
+
 .btn-link.text-danger:hover {
   text-decoration: underline;
 }
@@ -671,4 +635,3 @@ watch(
   line-height: 1;
 }
 </style>
-

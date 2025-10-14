@@ -15,7 +15,7 @@
 import zaloIconPath from '@/assets/images/zalo-icon.png';
 const zaloImageUrl = zaloIconPath;
 
-const zaloLink = 'https://id.zalo.me/account?continue=http%3A%2F%2Fzalo.me%2Fg%2Fnbwawu184';
+const zaloLink = 'https://zalo.me/0345933705';
 
 </script>
 

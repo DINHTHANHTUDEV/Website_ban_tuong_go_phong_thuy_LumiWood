@@ -19,8 +19,8 @@ public class PromotionController {
 
 
     @GetMapping("/hienthi")
-    public ResponseEntity<List<Promotion>> hienThiKhuyenMaiTheoUser() {
-        List<Promotion> promotions = promotionService.getAllValidPromotionsForLoggedInUser();
+    public ResponseEntity<List<Promotion>> hienThiKhuyenMaiTheoUser( @RequestParam String sessionID) {
+        List<Promotion> promotions = promotionService.getAllValidPromotionsForLoggedInUser(sessionID);
         return ResponseEntity.ok(promotions);
     }
 

@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**").permitAll()
+                                .requestMatchers("/ws/**").permitAll() // ✅ Cho phép endpoint WebSocket
 //                                .requestMatchers("/api/auth/**").permitAll()
 //                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 //                        .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")

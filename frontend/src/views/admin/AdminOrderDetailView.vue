@@ -108,17 +108,20 @@
               <!-- Tạm tính -->
               <div class="d-flex justify-content-between fw-bold fs-6">
                 <span>Tạm tính:</span>
-                <span>{{ formatCurrency(order.totalAmount + (order.discountAmount || 0) - (order.shippingCost || 0)) }}</span>
+                <span>{{ formatCurrency(order.totalAmount + (order.discountAmount || 0) - (order.shippingCost || 0))
+                }}</span>
               </div>
 
               <!-- Phí vận chuyển -->
-              <div v-if="order.shippingCost && order.shippingCost > 0" class="d-flex justify-content-between fw-bold fs-6">
+              <div v-if="order.shippingCost && order.shippingCost > 0"
+                class="d-flex justify-content-between fw-bold fs-6">
                 <span>Phí vận chuyển:</span>
                 <span>{{ formatCurrency(order.shippingCost) }}</span>
               </div>
 
               <!-- Giảm giá -->
-              <div v-if="order.discountAmount && order.discountAmount > 0" class="d-flex justify-content-between text-success fw-bold fs-6">
+              <div v-if="order.discountAmount && order.discountAmount > 0"
+                class="d-flex justify-content-between text-success fw-bold fs-6">
                 <span>Giảm giá:</span>
                 <span>- {{ formatCurrency(order.discountAmount) }}</span>
               </div>
@@ -132,18 +135,21 @@
               <!-- Lưu ý khi có đặt cọc -->
               <div v-if="order.depositAmount && order.depositAmount > 0" class="text-danger fw-semibold mt-3">
                 <div class="small fst-italic">
-                  🔔 <strong>Lưu ý:</strong> Với đơn hàng có giá trị trên 10.000.000 VNĐ, Quý khách vui lòng đặt cọc 30% giá trị đơn hàng để xác nhận đặt mua. Số tiền còn lại sẽ được thanh toán sau khi nhận hàng.
+                  🔔 <strong>Lưu ý:</strong> Với đơn hàng có giá trị trên 10.000.000 VNĐ, Quý khách vui lòng đặt cọc 30%
+                  giá trị đơn hàng để xác nhận đặt mua. Số tiền còn lại sẽ được thanh toán sau khi nhận hàng.
                 </div>
               </div>
 
               <!-- Đặt cọc -->
-              <div v-if="order.depositAmount && order.depositAmount > 0" class="d-flex justify-content-between text-danger fw-bold fs-6 mt-2">
+              <div v-if="order.depositAmount && order.depositAmount > 0"
+                class="d-flex justify-content-between text-danger fw-bold fs-6 mt-2">
                 <span>Đặt cọc (30%):</span>
                 <span>{{ formatCurrency(order.depositAmount) }}</span>
               </div>
 
               <!-- Phần còn lại -->
-              <div v-if="order.depositAmount && order.depositAmount > 0" class="d-flex justify-content-between text-danger fw-bold fs-6">
+              <div v-if="order.depositAmount && order.depositAmount > 0"
+                class="d-flex justify-content-between text-danger fw-bold fs-6">
                 <span>Phần còn lại (70%):</span>
                 <span>{{ formatCurrency(order.totalAmount - order.depositAmount) }}</span>
               </div>
@@ -167,13 +173,22 @@
                     {{ formatStatus(status) }}
                   </option>
                 </select>
-
+                <!-- nhập lý do hủy đơn hàng nếu chọn trạng thái "Đã hủy" -->
                 <div v-if="selectedNewStatus === 'CANCELLED'" class="mt-3">
                   <label for="cancelReason" class="form-label">
                     Lý do hủy đơn hàng <span class="text-danger">*</span>:
                   </label>
                   <textarea id="cancelReason" class="form-control" rows="3" v-model="cancelReason"
                     :disabled="updatingStatus" placeholder="Nhập lý do hủy đơn hàng"></textarea>
+                </div>
+
+                <!-- nhập lý do giao hàng thất bại nếu chọn trạng thái "Giao hàng thất bại" -->
+                <div v-if="selectedNewStatus === 'DELIVERY_FAILED'" class="mt-3">
+                  <label for="cancelReason" class="form-label">
+                    Lý do giao hàng thất bại <span class="text-danger">*</span>:
+                  </label>
+                  <textarea id="cancelReason" class="form-control" rows="3" v-model="cancelReason"
+                    :disabled="updatingStatus" placeholder="Nhập lý do giao hàng thất bại"></textarea>
                 </div>
 
                 <div v-if="updateError" class="alert alert-danger small p-2 mt-2">{{ updateError }}</div>
@@ -242,16 +257,20 @@ const allStatuses = {
   COMPLETED: 'Đã hoàn thành',
   CANCELLED: 'Đã hủy',
   PAYMENT_PENDING: 'Chờ thanh toán',
+  DELIVERY_FAILED: 'Giao hàng thất bại'
 };
+
 
 const validTransitions = {
   PENDING: ['PROCESSING', 'CANCELLED'],
   PAYMENT_PENDING: ['PROCESSING', 'CANCELLED'],
   PROCESSING: ['SHIPPING', 'CANCELLED'],
-  SHIPPING: ['COMPLETED', 'CANCELLED'],
+  SHIPPING: ['COMPLETED', 'CANCELLED', 'DELIVERY_FAILED'], // ✅ Cho phép chuyển sang DELIVERY_FAILED
+  DELIVERY_FAILED: ['SHIPPING', 'CANCELLED'], // ✅ Cho phép retry hoặc hủy
   COMPLETED: [],
   CANCELLED: [],
 };
+
 
 const availableNextStatuses = computed(() => {
   if (!order.value?.status) return [];

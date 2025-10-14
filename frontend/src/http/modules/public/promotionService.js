@@ -153,15 +153,19 @@
 // };
 import axios from "axios";
 
-export async function availablePromotions() {
-  const token = localStorage.getItem("token"); // hoặc từ Vuex/Pinia nếu bạn dùng
+export async function availablePromotions(sessionID) {
+  const token = localStorage.getItem("token");
 
   return axios.get("http://localhost:8080/api/promotion/hienthi", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    params: {
+      sessionID: sessionID || localStorage.getItem("sessionId") || "guest"
+    }
   });
 }
+
 
 
 export function applyPromotionCode(code, subtotal) {

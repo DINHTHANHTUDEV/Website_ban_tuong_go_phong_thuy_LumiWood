@@ -107,7 +107,7 @@ public class CheckoutService {
             logger.debug("Using sessionId from header: {}", sessionId);
 
             // 3. Lấy giỏ hàng hiện tại từ CartService với cart_id mới nhất
-// Sử dụng user hoặc sessionId để đảm bảo lấy đúng Cart mới nhất
+            // Sử dụng user hoặc sessionId để đảm bảo lấy đúng Cart mới nhất
             Cart cart = cartService.getOrCreateCart(user, sessionId); // Truyền user thay vì user.getUserId()
             logger.debug("Using cart_id: {} for order processing", cart.getId());
 

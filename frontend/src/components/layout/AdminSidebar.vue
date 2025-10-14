@@ -1,64 +1,63 @@
 <template>
-  <nav id="adminSidebar"
-       class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white admin-sidebar">
+  <nav id="adminSidebar" class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white admin-sidebar">
     <router-link :to="{ name: 'adminDashboard' }"
-                 class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none sidebar-brand">
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none sidebar-brand">
       <img src="https://doanhnhantredaklak.org/userfiles/users/107/1609494305008.png" alt="Logo"
-           class="sidebar-logo me-2"/>
+        class="sidebar-logo me-2" />
       <span class="fs-5">Admin Panel</span>
     </router-link>
     <hr class="sidebar-divider">
     <ul class="nav nav-pills flex-column mb-auto sidebar-nav">
       <li class="nav-item">
-        <router-link class="nav-link text-white" :to="{ name: 'adminDashboard' }"
-                     active-class="active">
+        <router-link class="nav-link text-white" :to="{ name: 'adminDashboard' }" active-class="active">
           <i class="bi bi-speedometer2 nav-icon"></i>
           <span>Thống kê</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link class="nav-link text-white" :to="{ name: 'adminOrderList' }"
-                     active-class="active">
+        <router-link class="nav-link text-white" :to="{ name: 'adminOrderList' }" active-class="active">
           <i class="bi bi-box-seam nav-icon"></i>
           <span>Quản lý Đơn hàng</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link class="nav-link text-white" :to="{ name: 'adminProductList' }"
-                     active-class="active">
+        <router-link class="nav-link text-white" :to="{ name: 'adminProductList' }" active-class="active">
           <i class="bi bi-tags nav-icon"></i>
           <span>Quản lý Sản phẩm</span>
         </router-link>
       </li>
       <li class="nav-item">
-        
-        <router-link class="nav-link text-white" :to="{ name: 'adminUserList' }"
-                     active-class="active">
+
+        <router-link class="nav-link text-white" :to="{ name: 'adminUserList' }" active-class="active">
           <i class="bi bi-people nav-icon"></i>
           <span>Quản lý Khách hàng</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link class="nav-link text-white" :to="{ name: 'adminShippingMethodList' }"
-                     active-class="active">
+        <router-link class="nav-link text-white" :to="{ name: 'adminShippingMethodList' }" active-class="active">
           <i class="bi bi-truck nav-icon"></i>
           <span>Quản lý Vận chuyển</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link class="nav-link text-white" :to="{ name: 'adminPromotionList' }"
-                     active-class="active">
+        <router-link class="nav-link text-white" :to="{ name: 'adminPromotionList' }" active-class="active">
           <i class="bi bi-gift nav-icon"></i>
           <span>Quản lý Khuyến mãi</span>
         </router-link>
-
       </li>
-      
+
       <li class="nav-item">
-        <router-link class="nav-link text-white" :to="{ name: 'adminArticleList' }"
-                     active-class="active">
+        <router-link class="nav-link text-white" :to="{ name: 'adminArticleList' }" active-class="active">
           <i class="bi bi-journal-text nav-icon"></i>
           <span>Quản lý Bài viết</span>
+        </router-link>
+      </li>
+
+      <!-- POS (bán hàng tại cửa hàng) -->
+      <li class="nav-item">
+        <router-link class="nav-link text-white" :to="{ name: 'adminPOS' }" active-class="active">
+          <i class="bi bi-cash nav-icon"></i>
+          <span>POS (bán hàng tại cửa hàng)</span>
         </router-link>
       </li>
     </ul>
@@ -75,8 +74,8 @@
 </template>
 
 <script setup>
-import {RouterLink, useRouter} from 'vue-router';
-import {useAuthStore} from '@/store/auth';
+import { RouterLink, useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/auth';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -84,7 +83,7 @@ const router = useRouter();
 const handleLogout = () => {
   console.log("AdminSidebar: Logging out...");
   authStore.logout();
-  router.push({name: 'home'});
+  router.push({ name: 'home' });
 };
 </script>
 
@@ -94,14 +93,14 @@ const handleLogout = () => {
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 100; 
-  width: 260px; 
+  z-index: 100;
+  width: 260px;
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.1);
-  background-color: #212529; 
+  background-color: #212529;
 }
 
 .sidebar-brand {
-  padding: 1rem 0.75rem; 
+  padding: 1rem 0.75rem;
   font-weight: 600;
 }
 
@@ -116,11 +115,11 @@ const handleLogout = () => {
 }
 
 .sidebar-nav .nav-link {
-  padding: 0.65rem 1rem; 
+  padding: 0.65rem 1rem;
   font-size: 0.95rem;
   border-radius: 0.3rem;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  margin-bottom: 2px; 
+  margin-bottom: 2px;
 }
 
 .sidebar-nav .nav-link .nav-icon {
@@ -152,12 +151,11 @@ const handleLogout = () => {
 
 @media (max-width: 991.98px) {
   .admin-sidebar {
-    
-    
+
+
     display: none;
   }
 
-  
+
 }
 </style>
-
