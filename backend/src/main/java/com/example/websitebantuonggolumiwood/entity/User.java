@@ -28,6 +28,12 @@ public class User {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
+    @Column(name = "email", nullable = false, length = 255)
+    private String email;
+
+    @Column(name = "phone_number", nullable = false, length = 255)
+    private String phone_number;
+
     @Column(name = "full_name", length = 150)
     private String fullName;
 

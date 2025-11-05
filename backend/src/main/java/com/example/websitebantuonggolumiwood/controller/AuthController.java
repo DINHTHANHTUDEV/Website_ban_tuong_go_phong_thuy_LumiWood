@@ -125,7 +125,8 @@ public class AuthController {
         user.setFullName(pendingUser.getFullName());
         user.setPassword(pendingUser.getPassword());
         user.setRole("CUSTOMER");
-        // KHÔNG gán email vào entity User
+        // them email vào db khi da dki thanh cong
+        user.setEmail(pendingUser.getEmail());
 
         userService.saveUser(user);
         pendingRegisterMap.remove(request.getEmail());

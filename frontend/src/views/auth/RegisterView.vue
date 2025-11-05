@@ -194,7 +194,7 @@ const handleRegister = async () => {
               {{ validationErrors.email }}
             </div>
           </div>
-          <div class="mb-3">
+          <!-- <div class="mb-3">
             <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
             <input type="password" class="form-control" :class="{ 'is-invalid': validationErrors.password }"
               id="password" v-model="formData.password" required placeholder="Ít nhất 6 ký tự" :disabled="loading" />
@@ -208,6 +208,38 @@ const handleRegister = async () => {
               id="confirmPassword" v-model="formData.confirmPassword" required placeholder="Nhập lại mật khẩu"
               :disabled="loading" />
             <div v-if="validationErrors.confirmPassword" class="invalid-feedback">
+              {{ validationErrors.confirmPassword }}
+            </div>
+          </div> -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input :type="showPassword ? 'text' : 'password'" class="form-control"
+                :class="{ 'is-invalid': validationErrors.password }" id="password" v-model="formData.password" required
+                placeholder="Ít nhất 6 ký tự" :disabled="loading" />
+              <button class="btn btn-outline-secondary" type="button" @click="showPassword = !showPassword"
+                :disabled="loading">
+                <font-awesome-icon :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+              </button>
+            </div>
+            <div v-if="validationErrors.password" class="invalid-feedback d-block">
+              {{ validationErrors.password }}
+            </div>
+          </div>
+
+
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input :type="showConfirmPassword ? 'text' : 'password'" class="form-control"
+                :class="{ 'is-invalid': validationErrors.confirmPassword }" id="confirmPassword"
+                v-model="formData.confirmPassword" required placeholder="Nhập lại mật khẩu" :disabled="loading" />
+              <button class="btn btn-outline-secondary" type="button"
+                @click="showConfirmPassword = !showConfirmPassword" :disabled="loading">
+                <font-awesome-icon :icon="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+              </button>
+            </div>
+            <div v-if="validationErrors.confirmPassword" class="invalid-feedback d-block">
               {{ validationErrors.confirmPassword }}
             </div>
           </div>
@@ -270,9 +302,12 @@ const formData = reactive({
   fullName: '',
   email: ''
 });
+// them show password toggle
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 const validationErrors = reactive({});
 const error = ref(null);
-
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
 const step = ref(1); // 1: đăng ký, 2: nhập OTP, 3: thành công
 const loading = ref(false);
 
@@ -303,8 +338,15 @@ function validateForm() {
     validationErrors.email = 'Email không hợp lệ.';
     isValid = false;
   }
-  if (!formData.password || formData.password.length < 6) {
+  if (!formData.password) {
+    validationErrors.password = 'Mật khẩu không được để trống.';
+    isValid = false;
+  }
+  else if (!formData.password || formData.password.length < 6) {
     validationErrors.password = 'Mật khẩu phải từ 6 ký tự.';
+    isValid = false;
+  } else if (!passwordRegex.test(formData.password)) {
+    validationErrors.password = 'Mật khẩu phải chứa ít nhất một chữ hoa và một chữ số.';
     isValid = false;
   }
   if (!formData.confirmPassword) {
@@ -377,4 +419,3 @@ async function handleVerifyOtp() {
   background-size: cover;
 }
 </style>
-
